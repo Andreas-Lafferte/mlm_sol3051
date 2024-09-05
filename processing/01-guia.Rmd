@@ -1,0 +1,368 @@
+---
+title: |
+ | \vspace{5cm} Guía N°1
+subtitle: |
+ Análisis de Datos Multinivel - SOL3051
+date: "`r Sys.setlocale('LC_TIME', 'es_ES.UTF-8'); format(Sys.Date(), '%A %d, %B %Y')`"
+author: |
+ |  Estudiante [Andreas Laffert](mailto:alaffertt@estudiante.uc.cl)
+ |  Profesora Camila Ortiz
+ | Ayudante Andres González
+ | \vspace{8cm}
+output:
+  bookdown::pdf_document2:
+    template: null
+    toc: false
+    keep_tex: true
+    number_sections: false
+bibliography: ../input/bib/magister.bib     
+csl: ../input/bib/apa6.csl    
+linkcolor: gray
+urlcolor: blue
+linestretch: '1.15'
+link-citations: yes
+fontsize: 12pt
+papersize: a4
+geometry: "left=2.54cm,right=2.54cm,top=2.54cm,bottom=2.54cm" 
+lang: en-US
+header-includes:
+  - \usepackage{titling}
+  - \pretitle{\begin{center}\LARGE\includegraphics[width=7cm]{../img/logo_isuc.png}\\[\bigskipamount]}
+  - \posttitle{\end{center}}
+  - \usepackage{times}           # Times New Roman
+  - \usepackage{caption}
+  - \usepackage{floatrow} 
+  - \usepackage{float}
+  - \floatsetup[figure]{capposition=top}
+  - \floatsetup[table]{capposition=top}
+  - \floatplacement{figure}{H}
+  - \floatplacement{table}{h}
+  - \usepackage{graphicx}
+  - \usepackage{booktabs}
+  - \usepackage{longtable}
+  - \usepackage{array}
+  - \usepackage{multirow}
+  - \usepackage{wrapfig}
+  - \usepackage{colortbl}
+  - \usepackage{pdflscape}
+  - \usepackage{tabu}
+  - \usepackage{fancyhdr}
+  - \fancyhead{} 
+  - \usepackage{threeparttable}
+---
+
+\pagebreak
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F,
+                      warning = F,
+                      error = F, 
+                      message = F) 
+```
+
+
+
+```{r paquetes, include=FALSE}
+if (! require("pacman")) install.packages("pacman")
+
+pacman::p_load(tidyverse, 
+               sjmisc, 
+               sjPlot, 
+               summarytools,
+               effectsize, 
+               lme4, 
+               easystats, 
+               influence.ME, 
+               performance,
+               broom, 
+               sjlabelled, 
+               here,
+               texreg, 
+               ggeffects,
+               misty, 
+               optimx,
+               naniar,
+               ggdist)
+
+options(scipen=999)
+rm(list = ls())
+```
+
+
+
+```{r funciones, include=FALSE}
+
+miles <- function(x) {
+  format(round(as.numeric(x),0), big.mark = ".")
+}
+
+decimales <- function(x) {
+  format(round(as.numeric(x), 2), decimal.mark = ",")
+}
+
+custom_extract <- function(model) {
+  tr <- extract(model)
+  
+  # Identificar índices a conservar (excluyendo "R$^2$", "s_idios" y "s_id")
+  gof_indices <- which(!(tr@gof.names %in% c("R$^2$", "s_idios", "s_id")))
+  
+  # Actualizar gof, gof.names y gof.decimal simultáneamente
+  tr@gof.names <- tr@gof.names[gof_indices]
+  tr@gof <- tr@gof[gof_indices]
+  tr@gof.decimal <- tr@gof.decimal[gof_indices]
+  
+  return(tr)
+}
+# set theme
+
+theme_set(theme_ggdist())
+
+```
+
+```{r datos, include=FALSE}
+load(file = here("input/data/morgan2013.RData"))
+
+names(morgan2013)
+glimpse(morgan2013)
+```
+
+```{r procesamiento, include=FALSE}
+
+# seleccionar ----
+
+db <- morgan2013 %>% 
+  select(country, ID, trustgov, sex = female, age, educ, employed, married,
+         race, ideology = left, leftpres, FLP, fhouse) %>% 
+  sjlabelled::remove_all_labels() %>% 
+  janitor::clean_names() %>% 
+  as_tibble()
+ 
+# filtrar: no ----- 
+
+# recodificar y transformar ----
+
+# trust
+sjmisc::descr(db$in_trust)
+
+# sexo
+frq(db$sex)
+
+db$sex <- car::recode(db$sex, 
+                      recodes= c("0='Hombre';1='Mujer'"),
+                      levels = c("Hombre","Mujer"),
+                      as.factor = T)
+
+# edad
+sjmisc::descr(db$age)
+frq(db$age)
+
+db$age_f <- car::recode(db$age, 
+                      recodes = c("1='Tramo 1';
+                                  2='Tramo 2';
+                                  3='Tramo 3';
+                                  4='Tramo 4';
+                                  5='Tramo 5';
+                                  6='Tramo 6'"),
+                      levels = c("Tramo 1",
+                                 "Tramo 2",   
+                                 "Tramo 3",   
+                                 "Tramo 4",    
+                                 "Tramo 5",   
+                                 "Tramo 6"),
+                      as.factor = T
+)
+
+# educ
+sjmisc::descr(db$educ)
+
+# employed
+frq(db$employed)
+
+db$employed <- car::recode(db$employed, 
+                      recodes= c("0='Desempleado';1='Empleado'"),
+                      levels = c("Desempleado","Empleado"),
+                      as.factor = T)
+# married
+frq(db$married)
+
+db$married <- car::recode(db$married, 
+                      recodes= c("0='No';1='Sí'"),
+                      levels = c("No","Sí"),
+                      as.factor = T)
+
+# race
+frq(db$race)
+
+db$married <- car::recode(db$married, 
+                      recodes= c("0='Otro';1='Blanco'"),
+                      levels = c("No","Sí"),
+                      as.factor = T)
+
+# ideology
+frq(db$ideology)
+
+# left
+frq(db$leftpres)
+
+db$leftpres <- car::recode(db$leftpres, 
+                      recodes= c("0='No';1='Sí'"),
+                      levels = c("No","Sí"),
+                      as.factor = T)
+
+
+# flp
+sjmisc::descr(db$flp)
+
+# fhouse
+sjmisc::descr(db$fhouse)
+
+# id
+sjmisc::descr(db$id)
+
+# country
+frq(db$country)
+
+# casos perdidos -----
+
+colSums(is.na(db))
+
+n_miss(db)
+
+prop_miss(db)*100
+
+miss_var_summary(db)
+
+miss_var_table(db)
+
+vis_miss(db) + theme(axis.text.x = element_text(angle=80))
+
+db <- na.omit(db)
+
+```
+
+
+```{r modelos, include=FALSE}
+# Null model
+model_0 <- lmer(in_trust ~ 1 + (1 | country), 
+                data = db, REML = T)
+
+performance::icc(model_0, by_group = T)
+## ICC Country = 0.11
+
+# Influence test
+inf_m0 <- influence(model_0, group = "country")
+
+# D cook
+cooks.distance(inf_m0, parameters = 1, sort = T) # cut point is 4/19 
+
+n_country <- length(unique(db$country))
+
+plot(inf_m0, which="cook",
+     cutoff=(4/n_country), sort=TRUE,
+     xlab="Distancia de Cook",
+     ylab="País", width=60, height=40)
+
+# no obs influyentes
+
+# Modelo 1: Indicadores N1
+model_1 <- lmer(in_trust ~ 1 + sex + age + educ + employed + married +
+                race + ideology + (1 | country),
+                data = db, 
+                REML = T)
+
+# Modelo 2: Pendiente aleatoria ideology
+model_2 <- lmer(in_trust ~ 1 + sex + age + educ + employed + married +
+                race + ideology + (1 + ideology| country),
+                data = db, 
+                REML = T)
+
+# Modelo 3: Interaccion ideology y leftpres
+model_3 <- lmer(in_trust ~ 1 + sex + age + educ + employed + married +
+                race + ideology + leftpres + ideology*leftpres + 
+                (1 + ideology| country),
+                data = db, 
+                REML = T)
+
+# Modelo 4: Pendiente aleatoria edad
+model_4 <- lmer(in_trust ~ 1 + sex + age + educ + employed + married +
+                race + ideology + (1 + age| country),
+                data = db, 
+                REML = T)
+
+# Modelo 5: Pendiente aleatoria edad + flp
+model_5 <- lmer(in_trust ~ 1 + sex + age + educ + employed + married +
+                race + ideology + flp + (1 + age| country),
+                data = db, 
+                REML = T)
+
+# Modelo 6: Pendiente aleatoria edad + flp
+model_6 <- lmer(in_trust ~ 1 + sex + age + educ + employed + married +
+                race + ideology + age*fhouse + (1 + age| country),
+                data = db, 
+                REML = T)
+
+```
+
+```{r table1, echo=FALSE, results='asis'}
+
+ccoef <- list(
+  "(Intercept)" = "Intercepto",
+  sexMujer = "Mujer (Ref.= Hombre)",
+  age = "Edad",
+  educ = "Nivel educacional (en años)",
+  employedEmpleado = "Empleado (Ref.= Desempleado)",
+  marriedSí = "Casado (Ref.= Otro)",
+  ideology = "Ideología política",
+  leftpresSí = "Presidencia Izquierda (Ref. = Otra)",
+  "ideology:leftpresSí" = "Ideología política x Presidencia Izquierda (Ref. = Otra)",
+  flp = "Participación laboral femenina",
+  fhouse = "Índice Freedom House",
+  "age:fhouse" = "Edad x Índice Freedom House"
+)
+
+
+texreg::texreg(list(model_1, model_2, model_3, model_4, model_5, model_6),
+               custom.model.names = c("Modelo 1",
+                                      "Modelo 2",
+                                      "Modelo 3",
+                                      "Modelo 4",
+                                      "Modelo 5",
+                                      "Modelo 6"),
+               caption = NULL,
+               stars = c(0.05, 0.01, 0.001),
+               custom.coef.map = ccoef,
+               custom.note = "\\item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. %stars \\\\ \\item Fuente: Elaboración propia en base a LAPOP 2008.",
+               threeparttable = T,
+               leading.zero = T,
+               float.pos = "h!",
+               use.packages = F,
+               booktabs = TRUE,
+               scalebox = 0.7,
+               custom.gof.names = c("AIC", 
+                                    "BIC", 
+                                    "-2*log-likelihood", 
+                                    "Num.obs", 
+                                    "Num. grupos: Países",
+                                    "Var: Países (Intercepto)",
+                                    "Var: Residual",
+                                    "Var: Países Ideología",
+                                    "Cov: Países (Intercepto), Ideología",
+                                     "Var: Países Edad",
+                                    "Cov: Países (Intercepto), Edad"
+                                    ))
+```
+
+
+
+# Referencias
+
+::: {#refs}
+:::
+
+\pagebreak
+
+# Código de R
+
+```{r ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+
+```

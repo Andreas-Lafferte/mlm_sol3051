@@ -1,0 +1,532 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  12pt,
+  a4paper,
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{setspace}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[left=2.54cm,right=2.54cm,top=2.54cm,bottom=2.54cm]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newlength{\cslentryspacingunit} % times entry-spacing
+\setlength{\cslentryspacingunit}{\parskip}
+\newenvironment{CSLReferences}[2] % #1 hanging-ident, #2 entry spacing
+ {% don't indent paragraphs
+  \setlength{\parindent}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+  \let\oldpar\par
+  \def\par{\hangindent=\cslhangindent\oldpar}
+  \fi
+  % set entry spacing
+  \setlength{\parskip}{#2\cslentryspacingunit}
+ }%
+ {}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{#1\hfill\break}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+\ifLuaTeX
+\usepackage[bidi=basic]{babel}
+\else
+\usepackage[bidi=default]{babel}
+\fi
+\babelprovide[main,import]{american}
+% get rid of language-specific shorthands (see #6817):
+\let\LanguageShortHands\languageshorthands
+\def\languageshorthands#1{}
+\usepackage{titling}
+\pretitle{\begin{center}\LARGE\includegraphics[width=7cm]{../img/logo_isuc.png}\\[\bigskipamount]}
+\posttitle{\end{center}}
+\usepackage{times}
+\usepackage{caption}
+\usepackage{floatrow}
+\usepackage{float}
+\floatsetup[figure]{capposition=top}
+\floatsetup[table]{capposition=top}
+\floatplacement{figure}{H}
+\floatplacement{table}{h}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{fancyhdr}
+\fancyhead{}
+\usepackage{threeparttable}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdflang={en-US},
+  colorlinks=true,
+  linkcolor={gray},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={blue},
+  pdfcreator={LaTeX via pandoc}}
+
+\title{\vspace{5cm} Guía N°1}
+\usepackage{etoolbox}
+\makeatletter
+\providecommand{\subtitle}[1]{% add subtitle to \maketitle
+  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+}
+\makeatother
+\subtitle{Análisis de Datos Multinivel - SOL3051}
+\author{~Estudiante \href{mailto:alaffertt@estudiante.uc.cl}{Andreas Laffert}\\
+\hspace*{0.333em}Profesora Camila Ortiz\\
+Ayudante Andres González\\
+\vspace{8cm}}
+\date{miércoles 04, septiembre 2024}
+
+\begin{document}
+\maketitle
+
+\setstretch{1.15}
+\pagebreak
+
+\begin{table}[h!]
+\begin{center}
+\scalebox{0.7}{
+\begin{threeparttable}
+\begin{tabular}{l c c c c c c}
+\toprule
+ & Modelo 1 & Modelo 2 & Modelo 3 & Modelo 4 & Modelo 5 & Modelo 6 \\
+\midrule
+Intercepto                                               & $0.43^{***}$  & $0.34^{**}$   & $0.46^{***}$  & $0.41^{***}$  & $0.08$        & $0.61^{*}$    \\
+                                                         & $(0.09)$      & $(0.12)$      & $(0.13)$      & $(0.08)$      & $(0.41)$      & $(0.24)$      \\
+Mujer (Ref.= Hombre)                                     & $-0.03$       & $-0.03$       & $-0.03$       & $-0.02$       & $-0.02$       & $-0.02$       \\
+                                                         & $(0.02)$      & $(0.02)$      & $(0.02)$      & $(0.02)$      & $(0.02)$      & $(0.02)$      \\
+Edad                                                     & $0.00$        & $-0.00$       & $-0.00$       & $0.00$        & $0.00$        & $0.09^{*}$    \\
+                                                         & $(0.01)$      & $(0.01)$      & $(0.01)$      & $(0.01)$      & $(0.01)$      & $(0.04)$      \\
+Nivel educacional (en años)                              & $-0.01^{***}$ & $-0.01^{**}$  & $-0.01^{**}$  & $-0.01^{***}$ & $-0.01^{***}$ & $-0.01^{***}$ \\
+                                                         & $(0.00)$      & $(0.00)$      & $(0.00)$      & $(0.00)$      & $(0.00)$      & $(0.00)$      \\
+Empleado (Ref.= Desempleado)                             & $-0.06^{**}$  & $-0.06^{***}$ & $-0.06^{***}$ & $-0.05^{*}$   & $-0.05^{*}$   & $-0.04^{*}$   \\
+                                                         & $(0.02)$      & $(0.02)$      & $(0.02)$      & $(0.02)$      & $(0.02)$      & $(0.02)$      \\
+Casado (Ref.= Otro)                                      & $0.05^{**}$   & $0.05^{**}$   & $0.05^{**}$   & $0.05^{**}$   & $0.05^{**}$   & $0.05^{**}$   \\
+                                                         & $(0.02)$      & $(0.02)$      & $(0.02)$      & $(0.02)$      & $(0.02)$      & $(0.02)$      \\
+Ideología política                                       & $-0.07^{***}$ & $-0.05^{***}$ & $-0.07^{***}$ & $-0.07^{***}$ & $-0.07^{***}$ & $-0.07^{***}$ \\
+                                                         & $(0.00)$      & $(0.01)$      & $(0.02)$      & $(0.00)$      & $(0.00)$      & $(0.00)$      \\
+Presidencia Izquierda (Ref. = Otra)                      &               &               & $-0.42$       &               &               &               \\
+                                                         &               &               & $(0.25)$      &               &               &               \\
+Ideología política x Presidencia Izquierda (Ref. = Otra) &               &               & $0.07^{*}$    &               &               &               \\
+                                                         &               &               & $(0.03)$      &               &               &               \\
+Participación laboral femenina                           &               &               &               &               & $0.61$        &               \\
+                                                         &               &               &               &               & $(0.73)$      &               \\
+Índice Freedom House                                     &               &               &               &               &               & $-0.08$       \\
+                                                         &               &               &               &               &               & $(0.09)$      \\
+Edad x Índice Freedom House                              &               &               &               &               &               & $-0.04^{**}$  \\
+                                                         &               &               &               &               &               & $(0.01)$      \\
+\midrule
+AIC                                                      & $52879.32$    & $52533.14$    & $52538.58$    & $52805.69$    & $52805.82$    & $52812.29$    \\
+BIC                                                      & $52957.31$    & $52626.73$    & $52647.77$    & $52899.27$    & $52907.20$    & $52921.47$    \\
+-2*log-likelihood                                        & $-26429.66$   & $-26254.57$   & $-26255.29$   & $-26390.84$   & $-26389.91$   & $-26392.14$   \\
+Num.obs                                                  & $18012$       & $18012$       & $18012$       & $18012$       & $18012$       & $18012$       \\
+Num. grupos: Países                                      & $19$          & $19$          & $19$          & $19$          & $19$          & $19$          \\
+Var: Países (Intercepto)                                 & $0.14$        & $0.24$        & $0.22$        & $0.10$        & $0.11$        & $0.10$        \\
+Var: Residual                                            & $1.09$        & $1.07$        & $1.07$        & $1.09$        & $1.09$        & $1.09$        \\
+Var: Países Ideología                                    & $$            & $0.00$        & $0.00$        & $$            & $$            & $$            \\
+Cov: Países (Intercepto), Ideología                      & $$            & $-0.02$       & $-0.01$       & $$            & $$            & $$            \\
+Var: Países Edad                                         & $$            & $$            & $$            & $0.00$        & $0.00$        & $0.00$        \\
+Cov: Países (Intercepto), Edad                           & $$            & $$            & $$            & $0.00$        & $0.00$        & $0.00$        \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\scriptsize{\item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. $^{***}p<0.001$; $^{**}p<0.01$; $^{*}p<0.05$ \\ \item Fuente: Elaboración propia en base a LAPOP 2008.}
+\end{tablenotes}
+\end{threeparttable}
+}
+\caption{}
+\label{table:coefficients}
+\end{center}
+\end{table}
+
+\hypertarget{referencias}{%
+\section{Referencias}\label{referencias}}
+
+\hypertarget{refs}{}
+\begin{CSLReferences}{0}{0}
+\end{CSLReferences}
+
+\pagebreak
+
+\hypertarget{cuxf3digo-de-r}{%
+\section{Código de R}\label{cuxf3digo-de-r}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{knitr}\SpecialCharTok{::}\NormalTok{opts\_chunk}\SpecialCharTok{$}\FunctionTok{set}\NormalTok{(}\AttributeTok{echo =}\NormalTok{ F,}
+                      \AttributeTok{warning =}\NormalTok{ F,}
+                      \AttributeTok{error =}\NormalTok{ F, }
+                      \AttributeTok{message =}\NormalTok{ F) }
+\ControlFlowTok{if}\NormalTok{ (}\SpecialCharTok{!} \FunctionTok{require}\NormalTok{(}\StringTok{"pacman"}\NormalTok{)) }\FunctionTok{install.packages}\NormalTok{(}\StringTok{"pacman"}\NormalTok{)}
+
+\NormalTok{pacman}\SpecialCharTok{::}\FunctionTok{p\_load}\NormalTok{(tidyverse, }
+\NormalTok{               sjmisc, }
+\NormalTok{               sjPlot, }
+\NormalTok{               summarytools,}
+\NormalTok{               effectsize, }
+\NormalTok{               lme4, }
+\NormalTok{               easystats, }
+\NormalTok{               influence.ME, }
+\NormalTok{               performance,}
+\NormalTok{               broom, }
+\NormalTok{               sjlabelled, }
+\NormalTok{               here,}
+\NormalTok{               texreg, }
+\NormalTok{               ggeffects,}
+\NormalTok{               misty, }
+\NormalTok{               optimx,}
+\NormalTok{               naniar,}
+\NormalTok{               ggdist)}
+
+\FunctionTok{options}\NormalTok{(}\AttributeTok{scipen=}\DecValTok{999}\NormalTok{)}
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list =} \FunctionTok{ls}\NormalTok{())}
+
+\NormalTok{miles }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(x) \{}
+  \FunctionTok{format}\NormalTok{(}\FunctionTok{round}\NormalTok{(}\FunctionTok{as.numeric}\NormalTok{(x),}\DecValTok{0}\NormalTok{), }\AttributeTok{big.mark =} \StringTok{"."}\NormalTok{)}
+\NormalTok{\}}
+
+\NormalTok{decimales }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(x) \{}
+  \FunctionTok{format}\NormalTok{(}\FunctionTok{round}\NormalTok{(}\FunctionTok{as.numeric}\NormalTok{(x), }\DecValTok{2}\NormalTok{), }\AttributeTok{decimal.mark =} \StringTok{","}\NormalTok{)}
+\NormalTok{\}}
+
+\NormalTok{custom\_extract }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(model) \{}
+\NormalTok{  tr }\OtherTok{\textless{}{-}} \FunctionTok{extract}\NormalTok{(model)}
+  
+  \CommentTok{\# Identificar índices a conservar (excluyendo "R$\^{}2$", "s\_idios" y "s\_id")}
+\NormalTok{  gof\_indices }\OtherTok{\textless{}{-}} \FunctionTok{which}\NormalTok{(}\SpecialCharTok{!}\NormalTok{(tr}\SpecialCharTok{@}\NormalTok{gof.names }\SpecialCharTok{\%in\%} \FunctionTok{c}\NormalTok{(}\StringTok{"R$\^{}2$"}\NormalTok{, }\StringTok{"s\_idios"}\NormalTok{, }\StringTok{"s\_id"}\NormalTok{)))}
+  
+  \CommentTok{\# Actualizar gof, gof.names y gof.decimal simultáneamente}
+\NormalTok{  tr}\SpecialCharTok{@}\NormalTok{gof.names }\OtherTok{\textless{}{-}}\NormalTok{ tr}\SpecialCharTok{@}\NormalTok{gof.names[gof\_indices]}
+\NormalTok{  tr}\SpecialCharTok{@}\NormalTok{gof }\OtherTok{\textless{}{-}}\NormalTok{ tr}\SpecialCharTok{@}\NormalTok{gof[gof\_indices]}
+\NormalTok{  tr}\SpecialCharTok{@}\NormalTok{gof.decimal }\OtherTok{\textless{}{-}}\NormalTok{ tr}\SpecialCharTok{@}\NormalTok{gof.decimal[gof\_indices]}
+  
+  \FunctionTok{return}\NormalTok{(tr)}
+\NormalTok{\}}
+\CommentTok{\# set theme}
+
+\FunctionTok{theme\_set}\NormalTok{(}\FunctionTok{theme\_ggdist}\NormalTok{())}
+
+\FunctionTok{load}\NormalTok{(}\AttributeTok{file =} \FunctionTok{here}\NormalTok{(}\StringTok{"input/data/morgan2013.RData"}\NormalTok{))}
+
+\FunctionTok{names}\NormalTok{(morgan2013)}
+\FunctionTok{glimpse}\NormalTok{(morgan2013)}
+
+\CommentTok{\# seleccionar {-}{-}{-}{-}}
+
+\NormalTok{db }\OtherTok{\textless{}{-}}\NormalTok{ morgan2013 }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{select}\NormalTok{(country, ID, trustgov, }\AttributeTok{sex =}\NormalTok{ female, age, educ, employed, married,}
+\NormalTok{         race, }\AttributeTok{ideology =}\NormalTok{ left, leftpres, FLP, fhouse) }\SpecialCharTok{\%\textgreater{}\%} 
+\NormalTok{  sjlabelled}\SpecialCharTok{::}\FunctionTok{remove\_all\_labels}\NormalTok{() }\SpecialCharTok{\%\textgreater{}\%} 
+\NormalTok{  janitor}\SpecialCharTok{::}\FunctionTok{clean\_names}\NormalTok{() }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{as\_tibble}\NormalTok{()}
+ 
+\CommentTok{\# filtrar: no {-}{-}{-}{-}{-} }
+
+\CommentTok{\# recodificar y transformar {-}{-}{-}{-}}
+
+\CommentTok{\# trust}
+\NormalTok{sjmisc}\SpecialCharTok{::}\FunctionTok{descr}\NormalTok{(db}\SpecialCharTok{$}\NormalTok{in\_trust)}
+
+\CommentTok{\# sexo}
+\FunctionTok{frq}\NormalTok{(db}\SpecialCharTok{$}\NormalTok{sex)}
+
+\NormalTok{db}\SpecialCharTok{$}\NormalTok{sex }\OtherTok{\textless{}{-}}\NormalTok{ car}\SpecialCharTok{::}\FunctionTok{recode}\NormalTok{(db}\SpecialCharTok{$}\NormalTok{sex, }
+                      \AttributeTok{recodes=} \FunctionTok{c}\NormalTok{(}\StringTok{"0=\textquotesingle{}Hombre\textquotesingle{};1=\textquotesingle{}Mujer\textquotesingle{}"}\NormalTok{),}
+                      \AttributeTok{levels =} \FunctionTok{c}\NormalTok{(}\StringTok{"Hombre"}\NormalTok{,}\StringTok{"Mujer"}\NormalTok{),}
+                      \AttributeTok{as.factor =}\NormalTok{ T)}
+
+\CommentTok{\# edad}
+\NormalTok{sjmisc}\SpecialCharTok{::}\FunctionTok{descr}\NormalTok{(db}\SpecialCharTok{$}\NormalTok{age)}
+\FunctionTok{frq}\NormalTok{(db}\SpecialCharTok{$}\NormalTok{age)}
+
+\NormalTok{db}\SpecialCharTok{$}\NormalTok{age\_f }\OtherTok{\textless{}{-}}\NormalTok{ car}\SpecialCharTok{::}\FunctionTok{recode}\NormalTok{(db}\SpecialCharTok{$}\NormalTok{age, }
+                      \AttributeTok{recodes =} \FunctionTok{c}\NormalTok{(}\StringTok{"1=\textquotesingle{}Tramo 1\textquotesingle{};}
+\StringTok{                                  2=\textquotesingle{}Tramo 2\textquotesingle{};}
+\StringTok{                                  3=\textquotesingle{}Tramo 3\textquotesingle{};}
+\StringTok{                                  4=\textquotesingle{}Tramo 4\textquotesingle{};}
+\StringTok{                                  5=\textquotesingle{}Tramo 5\textquotesingle{};}
+\StringTok{                                  6=\textquotesingle{}Tramo 6\textquotesingle{}"}\NormalTok{),}
+                      \AttributeTok{levels =} \FunctionTok{c}\NormalTok{(}\StringTok{"Tramo 1"}\NormalTok{,}
+                                 \StringTok{"Tramo 2"}\NormalTok{,   }
+                                 \StringTok{"Tramo 3"}\NormalTok{,   }
+                                 \StringTok{"Tramo 4"}\NormalTok{,    }
+                                 \StringTok{"Tramo 5"}\NormalTok{,   }
+                                 \StringTok{"Tramo 6"}\NormalTok{),}
+                      \AttributeTok{as.factor =}\NormalTok{ T}
+\NormalTok{)}
+
+\CommentTok{\# educ}
+\NormalTok{sjmisc}\SpecialCharTok{::}\FunctionTok{descr}\NormalTok{(db}\SpecialCharTok{$}\NormalTok{educ)}
+
+\CommentTok{\# employed}
+\FunctionTok{frq}\NormalTok{(db}\SpecialCharTok{$}\NormalTok{employed)}
+
+\NormalTok{db}\SpecialCharTok{$}\NormalTok{employed }\OtherTok{\textless{}{-}}\NormalTok{ car}\SpecialCharTok{::}\FunctionTok{recode}\NormalTok{(db}\SpecialCharTok{$}\NormalTok{employed, }
+                      \AttributeTok{recodes=} \FunctionTok{c}\NormalTok{(}\StringTok{"0=\textquotesingle{}Desempleado\textquotesingle{};1=\textquotesingle{}Empleado\textquotesingle{}"}\NormalTok{),}
+                      \AttributeTok{levels =} \FunctionTok{c}\NormalTok{(}\StringTok{"Desempleado"}\NormalTok{,}\StringTok{"Empleado"}\NormalTok{),}
+                      \AttributeTok{as.factor =}\NormalTok{ T)}
+\CommentTok{\# married}
+\FunctionTok{frq}\NormalTok{(db}\SpecialCharTok{$}\NormalTok{married)}
+
+\NormalTok{db}\SpecialCharTok{$}\NormalTok{married }\OtherTok{\textless{}{-}}\NormalTok{ car}\SpecialCharTok{::}\FunctionTok{recode}\NormalTok{(db}\SpecialCharTok{$}\NormalTok{married, }
+                      \AttributeTok{recodes=} \FunctionTok{c}\NormalTok{(}\StringTok{"0=\textquotesingle{}No\textquotesingle{};1=\textquotesingle{}Sí\textquotesingle{}"}\NormalTok{),}
+                      \AttributeTok{levels =} \FunctionTok{c}\NormalTok{(}\StringTok{"No"}\NormalTok{,}\StringTok{"Sí"}\NormalTok{),}
+                      \AttributeTok{as.factor =}\NormalTok{ T)}
+
+\CommentTok{\# race}
+\FunctionTok{frq}\NormalTok{(db}\SpecialCharTok{$}\NormalTok{race)}
+
+\NormalTok{db}\SpecialCharTok{$}\NormalTok{married }\OtherTok{\textless{}{-}}\NormalTok{ car}\SpecialCharTok{::}\FunctionTok{recode}\NormalTok{(db}\SpecialCharTok{$}\NormalTok{married, }
+                      \AttributeTok{recodes=} \FunctionTok{c}\NormalTok{(}\StringTok{"0=\textquotesingle{}Otro\textquotesingle{};1=\textquotesingle{}Blanco\textquotesingle{}"}\NormalTok{),}
+                      \AttributeTok{levels =} \FunctionTok{c}\NormalTok{(}\StringTok{"No"}\NormalTok{,}\StringTok{"Sí"}\NormalTok{),}
+                      \AttributeTok{as.factor =}\NormalTok{ T)}
+
+\CommentTok{\# ideology}
+\FunctionTok{frq}\NormalTok{(db}\SpecialCharTok{$}\NormalTok{ideology)}
+
+\CommentTok{\# left}
+\FunctionTok{frq}\NormalTok{(db}\SpecialCharTok{$}\NormalTok{leftpres)}
+
+\NormalTok{db}\SpecialCharTok{$}\NormalTok{leftpres }\OtherTok{\textless{}{-}}\NormalTok{ car}\SpecialCharTok{::}\FunctionTok{recode}\NormalTok{(db}\SpecialCharTok{$}\NormalTok{leftpres, }
+                      \AttributeTok{recodes=} \FunctionTok{c}\NormalTok{(}\StringTok{"0=\textquotesingle{}No\textquotesingle{};1=\textquotesingle{}Sí\textquotesingle{}"}\NormalTok{),}
+                      \AttributeTok{levels =} \FunctionTok{c}\NormalTok{(}\StringTok{"No"}\NormalTok{,}\StringTok{"Sí"}\NormalTok{),}
+                      \AttributeTok{as.factor =}\NormalTok{ T)}
+
+
+\CommentTok{\# flp}
+\NormalTok{sjmisc}\SpecialCharTok{::}\FunctionTok{descr}\NormalTok{(db}\SpecialCharTok{$}\NormalTok{flp)}
+
+\CommentTok{\# fhouse}
+\NormalTok{sjmisc}\SpecialCharTok{::}\FunctionTok{descr}\NormalTok{(db}\SpecialCharTok{$}\NormalTok{fhouse)}
+
+\CommentTok{\# id}
+\NormalTok{sjmisc}\SpecialCharTok{::}\FunctionTok{descr}\NormalTok{(db}\SpecialCharTok{$}\NormalTok{id)}
+
+\CommentTok{\# country}
+\FunctionTok{frq}\NormalTok{(db}\SpecialCharTok{$}\NormalTok{country)}
+
+\CommentTok{\# casos perdidos {-}{-}{-}{-}{-}}
+
+\FunctionTok{colSums}\NormalTok{(}\FunctionTok{is.na}\NormalTok{(db))}
+
+\FunctionTok{n\_miss}\NormalTok{(db)}
+
+\FunctionTok{prop\_miss}\NormalTok{(db)}\SpecialCharTok{*}\DecValTok{100}
+
+\FunctionTok{miss\_var\_summary}\NormalTok{(db)}
+
+\FunctionTok{miss\_var\_table}\NormalTok{(db)}
+
+\FunctionTok{vis\_miss}\NormalTok{(db) }\SpecialCharTok{+} \FunctionTok{theme}\NormalTok{(}\AttributeTok{axis.text.x =} \FunctionTok{element\_text}\NormalTok{(}\AttributeTok{angle=}\DecValTok{80}\NormalTok{))}
+
+\NormalTok{db }\OtherTok{\textless{}{-}} \FunctionTok{na.omit}\NormalTok{(db)}
+
+\CommentTok{\# Null model}
+\NormalTok{model\_0 }\OtherTok{\textless{}{-}} \FunctionTok{lmer}\NormalTok{(in\_trust }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ country), }
+                \AttributeTok{data =}\NormalTok{ db, }\AttributeTok{REML =}\NormalTok{ T)}
+
+\NormalTok{performance}\SpecialCharTok{::}\FunctionTok{icc}\NormalTok{(model\_0, }\AttributeTok{by\_group =}\NormalTok{ T)}
+\DocumentationTok{\#\# ICC Country = 0.11}
+
+\CommentTok{\# Influence test}
+\NormalTok{inf\_m0 }\OtherTok{\textless{}{-}} \FunctionTok{influence}\NormalTok{(model\_0, }\AttributeTok{group =} \StringTok{"country"}\NormalTok{)}
+
+\CommentTok{\# D cook}
+\FunctionTok{cooks.distance}\NormalTok{(inf\_m0, }\AttributeTok{parameters =} \DecValTok{1}\NormalTok{, }\AttributeTok{sort =}\NormalTok{ T) }\CommentTok{\# cut point is 4/19 }
+
+\NormalTok{n\_country }\OtherTok{\textless{}{-}} \FunctionTok{length}\NormalTok{(}\FunctionTok{unique}\NormalTok{(db}\SpecialCharTok{$}\NormalTok{country))}
+
+\FunctionTok{plot}\NormalTok{(inf\_m0, }\AttributeTok{which=}\StringTok{"cook"}\NormalTok{,}
+     \AttributeTok{cutoff=}\NormalTok{(}\DecValTok{4}\SpecialCharTok{/}\NormalTok{n\_country), }\AttributeTok{sort=}\ConstantTok{TRUE}\NormalTok{,}
+     \AttributeTok{xlab=}\StringTok{"Distancia de Cook"}\NormalTok{,}
+     \AttributeTok{ylab=}\StringTok{"País"}\NormalTok{, }\AttributeTok{width=}\DecValTok{60}\NormalTok{, }\AttributeTok{height=}\DecValTok{40}\NormalTok{)}
+
+\CommentTok{\# no obs influyentes}
+
+\CommentTok{\# Modelo 1: Indicadores N1}
+\NormalTok{model\_1 }\OtherTok{\textless{}{-}} \FunctionTok{lmer}\NormalTok{(in\_trust }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ sex }\SpecialCharTok{+}\NormalTok{ age }\SpecialCharTok{+}\NormalTok{ educ }\SpecialCharTok{+}\NormalTok{ employed }\SpecialCharTok{+}\NormalTok{ married }\SpecialCharTok{+}
+\NormalTok{                race }\SpecialCharTok{+}\NormalTok{ ideology }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ country),}
+                \AttributeTok{data =}\NormalTok{ db, }
+                \AttributeTok{REML =}\NormalTok{ T)}
+
+\CommentTok{\# Modelo 2: Pendiente aleatoria ideology}
+\NormalTok{model\_2 }\OtherTok{\textless{}{-}} \FunctionTok{lmer}\NormalTok{(in\_trust }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ sex }\SpecialCharTok{+}\NormalTok{ age }\SpecialCharTok{+}\NormalTok{ educ }\SpecialCharTok{+}\NormalTok{ employed }\SpecialCharTok{+}\NormalTok{ married }\SpecialCharTok{+}
+\NormalTok{                race }\SpecialCharTok{+}\NormalTok{ ideology }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{+}\NormalTok{ ideology}\SpecialCharTok{|}\NormalTok{ country),}
+                \AttributeTok{data =}\NormalTok{ db, }
+                \AttributeTok{REML =}\NormalTok{ T)}
+
+\CommentTok{\# Modelo 3: Interaccion ideology y leftpres}
+\NormalTok{model\_3 }\OtherTok{\textless{}{-}} \FunctionTok{lmer}\NormalTok{(in\_trust }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ sex }\SpecialCharTok{+}\NormalTok{ age }\SpecialCharTok{+}\NormalTok{ educ }\SpecialCharTok{+}\NormalTok{ employed }\SpecialCharTok{+}\NormalTok{ married }\SpecialCharTok{+}
+\NormalTok{                race }\SpecialCharTok{+}\NormalTok{ ideology }\SpecialCharTok{+}\NormalTok{ leftpres }\SpecialCharTok{+}\NormalTok{ ideology}\SpecialCharTok{*}\NormalTok{leftpres }\SpecialCharTok{+} 
+\NormalTok{                (}\DecValTok{1} \SpecialCharTok{+}\NormalTok{ ideology}\SpecialCharTok{|}\NormalTok{ country),}
+                \AttributeTok{data =}\NormalTok{ db, }
+                \AttributeTok{REML =}\NormalTok{ T)}
+
+\CommentTok{\# Modelo 4: Pendiente aleatoria edad}
+\NormalTok{model\_4 }\OtherTok{\textless{}{-}} \FunctionTok{lmer}\NormalTok{(in\_trust }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ sex }\SpecialCharTok{+}\NormalTok{ age }\SpecialCharTok{+}\NormalTok{ educ }\SpecialCharTok{+}\NormalTok{ employed }\SpecialCharTok{+}\NormalTok{ married }\SpecialCharTok{+}
+\NormalTok{                race }\SpecialCharTok{+}\NormalTok{ ideology }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{+}\NormalTok{ age}\SpecialCharTok{|}\NormalTok{ country),}
+                \AttributeTok{data =}\NormalTok{ db, }
+                \AttributeTok{REML =}\NormalTok{ T)}
+
+\CommentTok{\# Modelo 5: Pendiente aleatoria edad + flp}
+\NormalTok{model\_5 }\OtherTok{\textless{}{-}} \FunctionTok{lmer}\NormalTok{(in\_trust }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ sex }\SpecialCharTok{+}\NormalTok{ age }\SpecialCharTok{+}\NormalTok{ educ }\SpecialCharTok{+}\NormalTok{ employed }\SpecialCharTok{+}\NormalTok{ married }\SpecialCharTok{+}
+\NormalTok{                race }\SpecialCharTok{+}\NormalTok{ ideology }\SpecialCharTok{+}\NormalTok{ flp }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{+}\NormalTok{ age}\SpecialCharTok{|}\NormalTok{ country),}
+                \AttributeTok{data =}\NormalTok{ db, }
+                \AttributeTok{REML =}\NormalTok{ T)}
+
+\CommentTok{\# Modelo 6: Pendiente aleatoria edad + flp}
+\NormalTok{model\_6 }\OtherTok{\textless{}{-}} \FunctionTok{lmer}\NormalTok{(in\_trust }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ sex }\SpecialCharTok{+}\NormalTok{ age }\SpecialCharTok{+}\NormalTok{ educ }\SpecialCharTok{+}\NormalTok{ employed }\SpecialCharTok{+}\NormalTok{ married }\SpecialCharTok{+}
+\NormalTok{                race }\SpecialCharTok{+}\NormalTok{ ideology }\SpecialCharTok{+}\NormalTok{ age}\SpecialCharTok{*}\NormalTok{fhouse }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{+}\NormalTok{ age}\SpecialCharTok{|}\NormalTok{ country),}
+                \AttributeTok{data =}\NormalTok{ db, }
+                \AttributeTok{REML =}\NormalTok{ T)}
+
+
+\NormalTok{ccoef }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{(}
+  \StringTok{"(Intercept)"} \OtherTok{=} \StringTok{"Intercepto"}\NormalTok{,}
+  \AttributeTok{sexMujer =} \StringTok{"Mujer (Ref.= Hombre)"}\NormalTok{,}
+  \AttributeTok{age =} \StringTok{"Edad"}\NormalTok{,}
+  \AttributeTok{educ =} \StringTok{"Nivel educacional (en años)"}\NormalTok{,}
+  \AttributeTok{employedEmpleado =} \StringTok{"Empleado (Ref.= Desempleado)"}\NormalTok{,}
+\NormalTok{  marriedSí }\OtherTok{=} \StringTok{"Casado (Ref.= Otro)"}\NormalTok{,}
+  \AttributeTok{ideology =} \StringTok{"Ideología política"}\NormalTok{,}
+\NormalTok{  leftpresSí }\OtherTok{=} \StringTok{"Presidencia Izquierda (Ref. = Otra)"}\NormalTok{,}
+  \StringTok{"ideology:leftpresSí"} \OtherTok{=} \StringTok{"Ideología política x Presidencia Izquierda (Ref. = Otra)"}\NormalTok{,}
+  \AttributeTok{flp =} \StringTok{"Participación laboral femenina"}\NormalTok{,}
+  \AttributeTok{fhouse =} \StringTok{"Índice Freedom House"}\NormalTok{,}
+  \StringTok{"age:fhouse"} \OtherTok{=} \StringTok{"Edad x Índice Freedom House"}
+\NormalTok{)}
+
+
+\NormalTok{texreg}\SpecialCharTok{::}\FunctionTok{texreg}\NormalTok{(}\FunctionTok{list}\NormalTok{(model\_1, model\_2, model\_3, model\_4, model\_5, model\_6),}
+               \AttributeTok{custom.model.names =} \FunctionTok{c}\NormalTok{(}\StringTok{"Modelo 1"}\NormalTok{,}
+                                      \StringTok{"Modelo 2"}\NormalTok{,}
+                                      \StringTok{"Modelo 3"}\NormalTok{,}
+                                      \StringTok{"Modelo 4"}\NormalTok{,}
+                                      \StringTok{"Modelo 5"}\NormalTok{,}
+                                      \StringTok{"Modelo 6"}\NormalTok{),}
+               \AttributeTok{caption =} \ConstantTok{NULL}\NormalTok{,}
+               \AttributeTok{stars =} \FunctionTok{c}\NormalTok{(}\FloatTok{0.05}\NormalTok{, }\FloatTok{0.01}\NormalTok{, }\FloatTok{0.001}\NormalTok{),}
+               \AttributeTok{custom.coef.map =}\NormalTok{ ccoef,}
+               \AttributeTok{custom.note =} \StringTok{"}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. \%stars }\SpecialCharTok{\textbackslash{}\textbackslash{}\textbackslash{}\textbackslash{}}\StringTok{ }\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{item Fuente: Elaboración propia en base a LAPOP 2008."}\NormalTok{,}
+               \AttributeTok{threeparttable =}\NormalTok{ T,}
+               \AttributeTok{leading.zero =}\NormalTok{ T,}
+               \AttributeTok{float.pos =} \StringTok{"h!"}\NormalTok{,}
+               \AttributeTok{use.packages =}\NormalTok{ F,}
+               \AttributeTok{booktabs =} \ConstantTok{TRUE}\NormalTok{,}
+               \AttributeTok{scalebox =} \FloatTok{0.7}\NormalTok{,}
+               \AttributeTok{custom.gof.names =} \FunctionTok{c}\NormalTok{(}\StringTok{"AIC"}\NormalTok{, }
+                                    \StringTok{"BIC"}\NormalTok{, }
+                                    \StringTok{"{-}2*log{-}likelihood"}\NormalTok{, }
+                                    \StringTok{"Num.obs"}\NormalTok{, }
+                                    \StringTok{"Num. grupos: Países"}\NormalTok{,}
+                                    \StringTok{"Var: Países (Intercepto)"}\NormalTok{,}
+                                    \StringTok{"Var: Residual"}\NormalTok{,}
+                                    \StringTok{"Var: Países Ideología"}\NormalTok{,}
+                                    \StringTok{"Cov: Países (Intercepto), Ideología"}\NormalTok{,}
+                                     \StringTok{"Var: Países Edad"}\NormalTok{,}
+                                    \StringTok{"Cov: Países (Intercepto), Edad"}
+\NormalTok{                                    ))}
+\end{Highlighting}
+\end{Shaded}
+
+
+\end{document}
