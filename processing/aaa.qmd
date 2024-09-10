@@ -1,0 +1,50 @@
+---
+title: |
+  \vspace{5cm} Guía N°1
+subtitle: |
+  Análisis de Datos Multinivel - SOL3051
+date: "`r format(Sys.Date(), '%A %d, %B %Y')`"
+author: |
+  Estudiante [Andreas Laffert](mailto:alaffertt@estudiante.uc.cl)
+  Profesora Camila Ortiz
+  Ayudante Andres González
+output: 
+  pdf: 
+    toc: false
+    number-sections: false
+bibliography: ../input/bib/magister.bib     
+csl: ../input/bib/apa6.csl    
+linkcolor: gray
+urlcolor: blue
+linestretch: '1.15'
+fontsize: 12pt
+geometry: "left=2.54cm,right=2.54cm,top=2.54cm,bottom=2.54cm"
+lang: en
+header-includes:
+  - \usepackage{titling}
+  - \pretitle{\begin{center}\LARGE\includegraphics[width=7cm]{../img/logo_isuc.png}\\[\bigskipamount]}
+  - \posttitle{\end{center}}
+  - \usepackage{times}
+  - \usepackage{caption}
+  - \usepackage{floatrow}
+  - \usepackage{float}
+  - \floatsetup[figure]{capposition=top}
+  - \floatsetup[table]{capposition=top}
+  - \floatplacement{figure}{H}
+  - \floatplacement{table}{h}
+  - \usepackage{graphicx}
+  - \usepackage{booktabs}
+  - \usepackage{longtable}
+  - \usepackage{array}
+  - \usepackage{multirow}
+  - \usepackage{wrapfig}
+  - \usepackage{colortbl}
+  - \usepackage{pdflscape}
+  - \usepackage{tabu}
+  - \usepackage{fancyhdr}
+  - \fancyhead{}
+  - \usepackage{threeparttable}
+---
+
+
+# Hola

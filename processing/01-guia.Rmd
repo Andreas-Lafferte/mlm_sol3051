@@ -23,13 +23,15 @@ linestretch: '1.15'
 link-citations: yes
 fontsize: 12pt
 papersize: a4
-geometry: "left=2.54cm,right=2.54cm,top=2.54cm,bottom=2.54cm" 
-lang: en-US
+geometry: "left=2.54cm,right=2.54cm,top=2.54cm,bottom=2.54cm"
+lang: en
+fig-height: 4
+fig-width: 7.5
 header-includes:
   - \usepackage{titling}
   - \pretitle{\begin{center}\LARGE\includegraphics[width=7cm]{../img/logo_isuc.png}\\[\bigskipamount]}
   - \posttitle{\end{center}}
-  - \usepackage{times}           # Times New Roman
+  - \usepackage{times}           
   - \usepackage{caption}
   - \usepackage{floatrow} 
   - \usepackage{float}
@@ -53,6 +55,7 @@ header-includes:
 
 \pagebreak
 
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = F,
                       warning = F,
@@ -68,21 +71,20 @@ if (! require("pacman")) install.packages("pacman")
 pacman::p_load(tidyverse, 
                sjmisc, 
                sjPlot, 
-               summarytools,
-               effectsize, 
                lme4, 
                easystats, 
                influence.ME, 
                performance,
-               broom, 
-               sjlabelled, 
+               broom.mixed, 
                here,
                texreg, 
                ggeffects,
-               misty, 
-               optimx,
+               marginaleffects,
                naniar,
-               ggdist)
+               ggdist,
+               Polychrome,
+               misty,
+               kableExtra)
 
 options(scipen=999)
 rm(list = ls())
@@ -100,22 +102,12 @@ decimales <- function(x) {
   format(round(as.numeric(x), 2), decimal.mark = ",")
 }
 
-custom_extract <- function(model) {
-  tr <- extract(model)
-  
-  # Identificar índices a conservar (excluyendo "R$^2$", "s_idios" y "s_id")
-  gof_indices <- which(!(tr@gof.names %in% c("R$^2$", "s_idios", "s_id")))
-  
-  # Actualizar gof, gof.names y gof.decimal simultáneamente
-  tr@gof.names <- tr@gof.names[gof_indices]
-  tr@gof <- tr@gof[gof_indices]
-  tr@gof.decimal <- tr@gof.decimal[gof_indices]
-  
-  return(tr)
-}
 # set theme
 
 theme_set(theme_ggdist())
+
+options(knitr.kable.NA = "")
+options(knitr.table.format="latex")
 
 ```
 
@@ -193,9 +185,9 @@ db$married <- car::recode(db$married,
 # race
 frq(db$race)
 
-db$married <- car::recode(db$married, 
+db$race <- car::recode(db$race, 
                       recodes= c("0='Otro';1='Blanco'"),
-                      levels = c("No","Sí"),
+                      levels = c("Otro","Blanco"),
                       as.factor = T)
 
 # ideology
@@ -312,23 +304,17 @@ ccoef <- list(
   educ = "Nivel educacional (en años)",
   employedEmpleado = "Empleado (Ref.= Desempleado)",
   marriedSí = "Casado (Ref.= Otro)",
+  race = "Blanco (Ref.= Otro)",
   ideology = "Ideología política",
   leftpresSí = "Presidencia Izquierda (Ref. = Otra)",
-  "ideology:leftpresSí" = "Ideología política x Presidencia Izquierda (Ref. = Otra)",
-  flp = "Participación laboral femenina",
-  fhouse = "Índice Freedom House",
-  "age:fhouse" = "Edad x Índice Freedom House"
-)
+  "ideology:leftpresSí" = "Ideología política x Presidencia Izquierda (Ref. = Otra)")
 
 
-texreg::texreg(list(model_1, model_2, model_3, model_4, model_5, model_6),
+texreg::texreg(list(model_1, model_2, model_3),
                custom.model.names = c("Modelo 1",
                                       "Modelo 2",
-                                      "Modelo 3",
-                                      "Modelo 4",
-                                      "Modelo 5",
-                                      "Modelo 6"),
-               caption = NULL,
+                                      "Modelo 3"),
+               caption = paste("(\\#tab:table1)","Modelos multinivel para confianza política, ideología política y países con presidencia de izquierda"),
                stars = c(0.05, 0.01, 0.001),
                custom.coef.map = ccoef,
                custom.note = "\\item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. %stars \\\\ \\item Fuente: Elaboración propia en base a LAPOP 2008.",
@@ -337,20 +323,226 @@ texreg::texreg(list(model_1, model_2, model_3, model_4, model_5, model_6),
                float.pos = "h!",
                use.packages = F,
                booktabs = TRUE,
-               scalebox = 0.7,
+               scalebox = 0.9,
                custom.gof.names = c("AIC", 
                                     "BIC", 
                                     "-2*log-likelihood", 
-                                    "Num.obs", 
+                                    "Num. obs", 
                                     "Num. grupos: Países",
                                     "Var: Países (Intercepto)",
                                     "Var: Residual",
                                     "Var: Países Ideología",
-                                    "Cov: Países (Intercepto), Ideología",
-                                     "Var: Países Edad",
-                                    "Cov: Países (Intercepto), Edad"
+                                    "Cov: Países (Intercepto), Ideología"
                                     ))
 ```
+
+Hola hola
+
+
+```{r fig1, echo=FALSE, fig.cap='Interceptos aleatorios por país', fig.align='center'}
+sjPlot::plot_model(model_1, 
+                   type = "re", 
+                   vline.color = "red",
+                   grid = F, 
+                   sort.est = "sort.all", 
+                   ci.lvl = .95, 
+                   colors = "grey20") +
+  labs(title = NULL,
+       y = "Intercepto",
+       caption = "Fuente: Elaboración propia en base a LAPOP 2008")+
+  theme_ggdist()
+
+```
+
+
+
+```{r fig2, echo=FALSE, fig.cap='Pendientes aleatorias de ideología política por país', fig.align='center'}
+
+stats_m2 <- broom.mixed::tidy(model_2)
+
+ideology_rang <- seq(1:10)
+in_trust2 <- as.data.frame(sapply(ideology_rang,function(x)fixef(model_2)["(Intercept)"] + 
+                                    fixef(model_2)["sexMujer"]*0 +
+                                    fixef(model_2)["age"]*2.74 +
+                                    fixef(model_2)["educ"]*9.23 +
+                                    fixef(model_2)["employedEmpleado"]*1 +
+                                    fixef(model_2)["marriedSí"]*1 +
+                                    fixef(model_2)["raceBlanco"]*0 +
+                                    fixef(model_2)["ideology"]*x +
+                                    ranef(model_2)$country[,1] +
+                                    ranef(model_2)$country[,2]*x))
+
+in_trust2$country <- seq(1:19)
+in_trust2 <- reshape(in_trust2,
+                     direction = "long", #formato long
+                     v.names = "pred",
+                     varying = list(names(in_trust2)[1:10]),
+                     idvar = c("country"),
+                     timevar = "ideology")
+
+colores <- setNames(createPalette(19, c("#E16462", "#177b4b", "#0D0887")), levels(db$country))
+
+
+in_trust2 %>% 
+  mutate(country = factor(country, 
+                          levels = 1:19,              
+                          labels = levels(db$country))) %>% 
+  ggplot(aes(x = ideology, y = pred, group = country, color = country)) +
+  geom_line(alpha = 0.7) + 
+  ylim(-2,2) +
+  geom_abline(intercept = stats_m2$estimate[stats_m2$term == "(Intercept)"],
+              slope = stats_m2$estimate[stats_m2$term == "ideology"],
+              color = "black",
+              linetype = "dashed",
+              linewidth = 0.7) +
+  scale_color_manual(values = colores) +
+  labs(y = "Pendiente aleatoria",
+       x = "Ideología política",
+       color = "País",
+       caption = "Fuente: Elaboración propia en base a LAPOP 2008") 
+
+
+```
+
+
+```{r echo=FALSE, include=FALSE}
+# manual
+
+varcomp_0=as.data.frame(VarCorr(model_0))
+tau00_0=varcomp_0[1,4]
+sigma2_0=varcomp_0[2,4]
+
+varcomp_1=as.data.frame(VarCorr(model_1))
+tau00_1=varcomp_1[1,4]
+sigma2_1=varcomp_1[2,4]
+
+R2_1_L1=(sigma2_0-sigma2_1)/sigma2_0
+R2_1_L1
+
+R2_2_L1=(tau00_0-tau00_1)/tau00_0
+R2_2_L1
+
+# misty
+db_n <- db %>% 
+  mutate(
+    across(.cols = c(sex, age, employed, married, race),
+           .fns = ~ as.numeric(.))
+  )
+ 
+
+model_1_n <- lmer(in_trust ~ 1 + sex + age + educ + employed + married +
+                race + ideology + (1 | country),
+                data = db_n, 
+                REML = T)
+
+misty::multilevel.r2(model = model_1_n, print = "all")
+
+```
+
+
+```{r fig3, echo=FALSE, fig.cap='Efecto marginal de ideología moderado por presidencia de izquierda', fig.align='center'}
+
+plot_slopes(model_3, 
+            variables = "ideology", 
+            condition = "leftpres",
+            conf_level = .95) +
+  geom_hline(yintercept = 0, 
+             color = "red", 
+             linetype = "dashed") +
+  labs(y = "Efecto marginal ideología política",
+       x = "Presidencia de izquierda",
+       caption = "Fuente: Elaboración propia en base a LAPOP 2008",
+       title = NULL)
+
+```
+
+
+\pagebreak
+
+```{r table2, echo=FALSE, results='asis'}
+
+ccoef <- list(
+  "(Intercept)" = "Intercepto",
+  sexMujer = "Mujer (Ref.= Hombre)",
+  age = "Edad",
+  educ = "Nivel educacional (en años)",
+  employedEmpleado = "Empleado (Ref.= Desempleado)",
+  marriedSí = "Casado (Ref.= Otro)",
+  race = "Blanco (Ref.= Otro)",
+  ideology = "Ideología política",
+  flp = "Participación laboral femenina",
+  fhouse = "Índice Freedom House",
+  "age:fhouse" = "Edad x Índice Freedom House"
+)
+
+
+texreg::texreg(list(model_4, model_5, model_6),
+               custom.model.names = c("Modelo 4",
+                                      "Modelo 5",
+                                      "Modelo 6"),
+               caption = paste("(\\#tab:table2)","Modelos multinivel para confianza política, edad e índice de democracía del país"),
+               stars = c(0.05, 0.01, 0.001),
+               custom.coef.map = ccoef,
+               custom.note = "\\item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. %stars \\\\ \\item Fuente: Elaboración propia en base a LAPOP 2008.",
+               threeparttable = T,
+               leading.zero = T,
+               float.pos = "h!",
+               use.packages = F,
+               booktabs = TRUE,
+               scalebox = 0.9,
+               custom.gof.names = c("AIC", 
+                                    "BIC", 
+                                    "-2*log-likelihood", 
+                                    "Num. obs", 
+                                    "Num. grupos: Países",
+                                    "Var: Países (Intercepto)",
+                                    "Var: Países Edad",
+                                    "Cov: Países (Intercepto), Edad",
+                                    "Var: Residual"
+                                     
+                                    ))
+```
+
+Si bien la primera parte del supuesto de sequential unconfoundedness es más plausible de corregir, la segunda no lo es tanto. El sesgo de variable omitida o de heterogeneidad no observada en estudios observacionales es difícil de combatir, ya que generalmente existen variables no observadas postratamiento que pueden confundir el efecto del mediador en la variable de resultado [@acharya_explaining_2016]. Precisamente, esto es lo que Pepinsky et al. [-@pepinsky_causation_2024] cuestionan en la estrategia de identificación de  Homola et al. [-@homola_fixed_2024], al asumir que no existen confounders intermedios $Z_i$ no observados que puedan afectar la estimación causal de la distancia a los campos en la intolerancia, lo cual es difícil de sostener.
+
+
+```{r table3, echo=FALSE, results='asis'}
+
+#performance::test_likelihoodratio(model_1, model_4)
+
+res_fit1 <- anova(model_1, model_4)
+
+fit_tab <- res_fit1[c(2,3,5,6,7,8)] %>% as.tibble(.)
+
+fit_tab$mod <- c("Modelo 1", "Modelo 4")
+
+fit_tab$p <- if_else(fit_tab$`Pr(>Chisq)` < 0.001, "< 0.001 ***", NA)
+
+fit_tab$Chisq <- round(fit_tab$Chisq, digits = 2)
+
+fit_tab <- fit_tab %>% 
+  select(mod, AIC, BIC, deviance, Chisq, Df, p)
+
+colnames <- c("Modelo", "AIC", "BIC", "Deviance", "X2", "Df", "p-value")
+
+fit_tab <- kableExtra::kable(fit_tab, 
+                             format = "latex", 
+                             col.names = colnames,
+                             row.names = F,
+                             booktabs = T, 
+                             caption = paste("(\\#tab:table3)","Estadísticos de bondad de ajuste"),) %>% 
+  kableExtra::kable_styling(latex_options = "hold_position", 
+                            position = "center") %>%
+  kableExtra::kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F) %>% 
+  column_spec(1, width = "2cm") %>%
+  row_spec(0, bold = T)
+
+fit_tab
+
+```
+
+
+\newpage
 
 
 
