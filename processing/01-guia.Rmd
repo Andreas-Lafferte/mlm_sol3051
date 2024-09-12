@@ -51,6 +51,8 @@ header-includes:
   - \usepackage{fancyhdr}
   - \fancyhead{} 
   - \usepackage{threeparttable}
+editor_options: 
+  chunk_output_type: console
 ---
 
 \pagebreak
@@ -74,7 +76,6 @@ pacman::p_load(tidyverse,
                lme4, 
                easystats, 
                influence.ME, 
-               performance,
                broom.mixed, 
                here,
                texreg, 
@@ -84,7 +85,8 @@ pacman::p_load(tidyverse,
                ggdist,
                Polychrome,
                misty,
-               kableExtra)
+               kableExtra,
+               sjlabelled)
 
 options(scipen=999)
 rm(list = ls())
@@ -123,8 +125,7 @@ glimpse(morgan2013)
 # seleccionar ----
 
 db <- morgan2013 %>% 
-  select(country, ID, trustgov, sex = female, age, educ, employed, married,
-         race, ideology = left, leftpres, FLP, fhouse) %>% 
+  dplyr::select(country, ID, trustgov, sex = female, age, educ, employed, married, race, ideology = left, leftpres, FLP, fhouse) %>% 
   sjlabelled::remove_all_labels() %>% 
   janitor::clean_names() %>% 
   as_tibble()
@@ -241,6 +242,10 @@ model_0 <- lmer(in_trust ~ 1 + (1 | country),
 performance::icc(model_0, by_group = T)
 ## ICC Country = 0.11
 
+sigma_e <- sigma(model_0)^2
+tau_mu <- VarCorr(model_0)$country[[1]]
+cic <- tau_mu / (tau_mu+sigma_e)
+
 # Influence test
 inf_m0 <- influence(model_0, group = "country")
 
@@ -287,13 +292,30 @@ model_5 <- lmer(in_trust ~ 1 + sex + age + educ + employed + married +
                 data = db, 
                 REML = T)
 
-# Modelo 6: Pendiente aleatoria edad + flp
+# Modelo 6: Pendiente aleatoria edad + flp + interaccion fhouse
 model_6 <- lmer(in_trust ~ 1 + sex + age + educ + employed + married +
                 race + ideology + age*fhouse + (1 + age| country),
                 data = db, 
                 REML = T)
 
 ```
+
+# Enunciado 1
+
+Estime un modelo con confianza política como variable dependiente que le permita calcular la correlación intraclase, usando como unidad de agrupamiento la variable “país”. Reporte sus resultados, interprételos y argumente si en este caso se justifica aplicar modelamiento multinivel como estrategia de análisis. (6 ptos).
+
+La correlación intraclase (ICC) para el modelo nulo (no mostrado) es igual a 0.109, lo cual indica la cantidad de varianza de confianza política que puede atribuirse a la estructura de agrupación en la población, en este caso, los países [ICC en base a Hox et al., -@hox_multilevel_2017a p. 13]. Esto significa que cerca de un 11% de la varianza total de la confianza política de los individuos se asocia a características específicas de los países, asentando como precedente que existen diferencias significativas entre estos respecto al nivel de confianza política. 
+
+
+$$ICC = \frac{\sigma^2_{\mu_0}}{\sigma^2_{\mu_0} + \sigma^2_{\epsilon}} = \frac{0.1376}{0.1376+ 1.1207} = 0.1094$$
+
+El uso de modelos multinivel en este análisis se justifica tanto por razones sustantivas como metodológicas. En términos sustantivos, el coeficiente de correlación intraclase (ICC) del 11% indica que una parte significativa de la variabilidad en la confianza política de los individuos está asociada a las diferencias entre países, lo que hace necesario modelar esta variabilidad a nivel contextual para una comprensión más completa de la confianza política. Desde una perspectiva metodológica, ignorar la estructura jerárquica de los datos (individuos anidados en países) y emplear estimadores convencionales, como OLS, puede introducir sesgos. Como señalan Finch et al. [-@finch_multilevel_2014], aplicar métodos estadísticos convencionales a datos jerárquicos viola el supuesto de independencia de los residuos, lo que resulta en errores estándar mal estimados y valores p más pequeños de lo apropiado, incrementando el riesgo de cometer un error de tipo I.
+
+# Enunciado 2
+
+Estime tres modelos usando confianza política como variable dependiente: i) En primer lugar, un modelo con intercepto aleatorio que sólo incluye efectos fijos de nivel individual de las variables sexo, edad, educación, empleado, casado, raza e ideología. ii) Luego, un modelo con la misma estructura fija que el modelo anterior pero que agrega efectos aleatorios de la variable ideología. iii) Por último, un modelo que añade a lo anterior una interacción cruzada entre ideología y el indicador de Presidencia de Izquierda.
+
+a) Reporte sus resultados en una tabla en formato académico (2 puntos).
 
 ```{r table1, echo=FALSE, results='asis'}
 
@@ -304,7 +326,7 @@ ccoef <- list(
   educ = "Nivel educacional (en años)",
   employedEmpleado = "Empleado (Ref.= Desempleado)",
   marriedSí = "Casado (Ref.= Otro)",
-  race = "Blanco (Ref.= Otro)",
+  raceBlanco = "Blanco (Ref.= Otro)",
   ideology = "Ideología política",
   leftpresSí = "Presidencia Izquierda (Ref. = Otra)",
   "ideology:leftpresSí" = "Ideología política x Presidencia Izquierda (Ref. = Otra)")
@@ -326,7 +348,7 @@ texreg::texreg(list(model_1, model_2, model_3),
                scalebox = 0.9,
                custom.gof.names = c("AIC", 
                                     "BIC", 
-                                    "-2*log-likelihood", 
+                                    "Log-likelihood", 
                                     "Num. obs", 
                                     "Num. grupos: Países",
                                     "Var: Países (Intercepto)",
@@ -336,10 +358,14 @@ texreg::texreg(list(model_1, model_2, model_3),
                                     ))
 ```
 
-Hola hola
+b) En base al primer modelo, grafique los interceptos aleatorios. ¿Qué se puede concluir de estos resultados? (6 puntos).
 
 
-```{r fig1, echo=FALSE, fig.cap='Interceptos aleatorios por país', fig.align='center'}
+En la  Figura \@ref(fig:fig1) se muestran los interceptos aleatorios por país para el Modelo 1 que incluye los predictores de nivel individual.  Los resultados indican que la mayoría de los países, con la excepción de Jamaica, presentan niveles promedio de confianza política que se desvían significativamente del gran intercepto ($\gamma_{00}$). Esto se confirma en la parte aleatoria del Modelo 1 (Tabla \@ref(tab:table1)), donde la varianza entre países en torno al intercepto ($\sigma^2_{\mu_0}$) es cercana al 14%. Así, países como Perú y Paraguay se desvían negativamente del promedio general, reflejando niveles más bajos de confianza política, mientras que países como Belize y Uruguay se desvían positivamente, indicando mayores niveles de confianza política en promedio.
+
+
+
+```{r fig1, echo=FALSE, fig.cap='Interceptos aleatorios por país', fig.align='center', out.width='80%'}
 sjPlot::plot_model(model_1, 
                    type = "re", 
                    vline.color = "red",
@@ -356,7 +382,19 @@ sjPlot::plot_model(model_1,
 
 
 
-```{r fig2, echo=FALSE, fig.cap='Pendientes aleatorias de ideología política por país', fig.align='center'}
+c) En base al primer modelo, interprete el efecto de ser casado y de la ideología (5 puntos).
+
+En la Tabla \@ref(tab:table1) se muestran los resultados de los modelos multinivel para la confianza política del enunciado 2. Los resultados del Modelo 1 indican que el efecto de estar casado es positivo y estadísticamente significativo ($\beta$ = 0.05, $p$ < 0.01). Específicamente, ceteris paribus, las personas casadas obtienen, en promedio, 0.05 puntos adicionales en la escala de confianza política en comparación con quienes no lo están, siendo este efecto significativo al 99% de confianza. Por otro lado, el efecto de la ideología política, medida en una escala de 1 a 10 (donde 1 representa posiciones más cercanas a la derecha y 10 a la izquierda), es negativo y estadísticamente significativo con un 99.9% de confianza. Esto implica que, por cada unidad que aumenta la escala de ideología, la confianza política disminuye en promedio 0.07 puntos, manteniendo constantes los demás predictores.
+
+
+
+d) En base al segundo modelo, obtenga las pendientes aleatorias correspondientes al efecto de la ideología y genere manualmente un gráfico que permita visualizar la heterogeneidad de estos efectos. Para ello, mantenga constantes las variables continuas en su media y las variables dicotómicas en la moda muestral. Interprete sustantivamente estos resultados (6 puntos).
+
+
+La Figura \@ref(fig:fig2) presenta las pendientes aleatorias de la ideología política para cada país, junto con una línea punteada que representa la pendiente fija de esta variable en el Modelo 2. A partir de los resultados de este modelo, se observa que, aunque el efecto fijo de la ideología política _entre_ países es negativo ($\beta$ = -0.05, $p$ < 0.001), al descomponer este efecto _dentro_ de los países se evidencia una heterogeneidad en su dirección. Por ejemplo, en países como El Salvador y Honduras el efecto aleatorio de la ideología es negativo, mientras que en otros, como Uruguay y Haití, es positivo. Estos resultados sugieren que el efecto de la ideología (es decir, ser de izquierda) sobre la confianza política varía entre países; en algunos se asocia con una menor confianza, mientras que en otros con una mayor, lo que releva las diferencias contextuales entre países (que serán objeto de modelamiento en análisis siguientes).
+
+
+```{r fig2, echo=FALSE, fig.cap='Pendientes aleatorias de ideología política por país', fig.align='center',out.width='80%'}
 
 stats_m2 <- broom.mixed::tidy(model_2)
 
@@ -405,21 +443,27 @@ in_trust2 %>%
 ```
 
 
+
+e) Calcule e intreprete la varianza explicada por el modelo 2. (5 puntos).
+
+
+Siguiendo a Snijders y Bosker [-@snijders_multilevel_2012], dado que el Modelo 2 incluye efectos aleatorios de la variable ideología, se utiliza la estimación de la varianza explicada por el Modelo 1 para calcular la varianza explicada por el Modelo 2. 
+
 ```{r echo=FALSE, include=FALSE}
 # manual
 
-varcomp_0=as.data.frame(VarCorr(model_0))
-tau00_0=varcomp_0[1,4]
-sigma2_0=varcomp_0[2,4]
+varcomp_0 <- as.data.frame(VarCorr(model_0))
+tau00_0 <- varcomp_0[1,4]
+sigma2_0 <- varcomp_0[2,4]
 
-varcomp_1=as.data.frame(VarCorr(model_1))
-tau00_1=varcomp_1[1,4]
-sigma2_1=varcomp_1[2,4]
+varcomp_1 <- as.data.frame(VarCorr(model_1))
+tau00_1 <- varcomp_1[1,4]
+sigma2_1 <- varcomp_1[2,4]
 
-R2_1_L1=(sigma2_0-sigma2_1)/sigma2_0
+R2_1_L1 <- (sigma2_0-sigma2_1)/sigma2_0
 R2_1_L1
 
-R2_2_L1=(tau00_0-tau00_1)/tau00_0
+R2_2_L1 <- (tau00_0-tau00_1)/tau00_0
 R2_2_L1
 
 # misty
@@ -439,8 +483,27 @@ misty::multilevel.r2(model = model_1_n, print = "all")
 
 ```
 
+A nivel individual: 
 
-```{r fig3, echo=FALSE, fig.cap='Efecto marginal de ideología moderado por presidencia de izquierda', fig.align='center'}
+$$
+R^2_1 = \frac{\sigma^2_{\epsilon}\mid\text{NULO} - \sigma^2_{\epsilon}\mid\text{COMPLETO}}{\sigma^2_{\epsilon}\mid\text{NULO}} = \frac{1.1207 - 1.0932}{1.1207} = 0.025
+$$
+A nivel contextual: 
+
+$$
+R^2_2 = \frac{\sigma^2_{\mu_0}\mid\text{NULO} - \sigma^2_{\mu_0}\mid\text{COMPLETO}}{\sigma^2_{\mu_0}\mid\text{NULO}} = \frac{0.1376-0.1369}{0.1376} = 0.005
+$$
+
+Los resultados indican que el $R^2$ a nivel individual _(within)_ es de 0.025, mientras que el de nivel contextual _(between)_ es de 0.005. De este modo, los predictores individuales del Modelo 1 explican un 2.5% de la varianza de la confianza política a nivel individual. Por su parte, este modelo solo logra explicar el 0.5% de la varianza a nivel contextual, lo que corresponde al 0.5% del 11% indicado por la correlación intraclase. Con todo, este no es un buen modelo para dar cuenta de la varianza de la confianza política.
+
+f) Tomando como referencia el tercer modelo, obtenga los efectos marginales de ideología moderado por “presidencia de izquierda”. Interprete sustantivamente estos efectos (6 puntos).
+
+
+En la Figura \@ref(fig:fig3) se muestran los efectos marginales de la ideología moderada por la presencia de presidencia de izquierda en el país, según el Modelo 3. Los resultados indican que, cuando el país cuenta con una presidencia de izquierda (leftpres = 1), el efecto marginal de la ideología es positivo, pero no es estadísticamente significativo al 95% de confianza (estimación = 0.00243, $p$ = 0.923). En contraste, cuando el país no tiene una presidencia de izquierda (leftpres = 0), el efecto marginal de la ideología es negativo y estadísticamente significativo (estimación = -0.08163, $p$ < 0.001). 
+
+
+
+```{r fig3, echo=FALSE, fig.cap='Efecto marginal de ideología moderado por presidencia de izquierda', fig.align='center', out.width='80%'}
 
 plot_slopes(model_3, 
             variables = "ideology", 
@@ -456,55 +519,40 @@ plot_slopes(model_3,
 
 ```
 
+Los efectos marginales se pueden expresar con las siguientes ecuaciones:
 
-\pagebreak
+1. Cuando el país tiene una presidencia de izquierda (leftpres = 1):
 
-```{r table2, echo=FALSE, results='asis'}
+$$(\frac{\partial\text{Confianza política}}{\partial\text{Ideología}}\mid\text{Leftpres=1}) = \beta_1\text{Ideología}+\beta_3\text{Ideología x Leftpres}
+$$
 
-ccoef <- list(
-  "(Intercept)" = "Intercepto",
-  sexMujer = "Mujer (Ref.= Hombre)",
-  age = "Edad",
-  educ = "Nivel educacional (en años)",
-  employedEmpleado = "Empleado (Ref.= Desempleado)",
-  marriedSí = "Casado (Ref.= Otro)",
-  race = "Blanco (Ref.= Otro)",
-  ideology = "Ideología política",
-  flp = "Participación laboral femenina",
-  fhouse = "Índice Freedom House",
-  "age:fhouse" = "Edad x Índice Freedom House"
-)
+Donde el efecto marginal estimado de la ideología es 0.00243 con un valor $p$ de 0.923, el efecto marginal de la ideología es positivo pero no significativo al 95% de confianza.
 
+2. Cuando el país no tiene una presidencia de izquierda (leftpres = 0):
 
-texreg::texreg(list(model_4, model_5, model_6),
-               custom.model.names = c("Modelo 4",
-                                      "Modelo 5",
-                                      "Modelo 6"),
-               caption = paste("(\\#tab:table2)","Modelos multinivel para confianza política, edad e índice de democracía del país"),
-               stars = c(0.05, 0.01, 0.001),
-               custom.coef.map = ccoef,
-               custom.note = "\\item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. %stars \\\\ \\item Fuente: Elaboración propia en base a LAPOP 2008.",
-               threeparttable = T,
-               leading.zero = T,
-               float.pos = "h!",
-               use.packages = F,
-               booktabs = TRUE,
-               scalebox = 0.9,
-               custom.gof.names = c("AIC", 
-                                    "BIC", 
-                                    "-2*log-likelihood", 
-                                    "Num. obs", 
-                                    "Num. grupos: Países",
-                                    "Var: Países (Intercepto)",
-                                    "Var: Países Edad",
-                                    "Cov: Países (Intercepto), Edad",
-                                    "Var: Residual"
-                                     
-                                    ))
-```
+$$(\frac{\partial\text{Confianza política}}{\partial\text{Ideología}}\mid\text{Leftpres=0}) = \beta_1\text{Ideología}
+$$
 
-Si bien la primera parte del supuesto de sequential unconfoundedness es más plausible de corregir, la segunda no lo es tanto. El sesgo de variable omitida o de heterogeneidad no observada en estudios observacionales es difícil de combatir, ya que generalmente existen variables no observadas postratamiento que pueden confundir el efecto del mediador en la variable de resultado [@acharya_explaining_2016]. Precisamente, esto es lo que Pepinsky et al. [-@pepinsky_causation_2024] cuestionan en la estrategia de identificación de  Homola et al. [-@homola_fixed_2024], al asumir que no existen confounders intermedios $Z_i$ no observados que puedan afectar la estimación causal de la distancia a los campos en la intolerancia, lo cual es difícil de sostener.
+Aquí, el efecto marginal estimado de la ideología es -0.08163 con un valor $p$ < 0.001, lo que indica un efecto negativo y estadísticamente significativo.
 
+Con todo, esto sugiere que la influencia de la ideología sobre la confianza política varía dependiendo de la presencia de una presidencia de izquierda, siendo significativa solo en contextos sin dicha presidencia.
+
+# Enunciado 3
+
+Contraste el modelo 1 estimado en la pregunta 2) con un modelo con la misma estructura fija pero que incorpora efectos aleatorios de la variable edad (modelo 4) y reporte sus resultados en una tabla. Formule la hipótesis apropiada para evaluar si se justifica la inclusión de este parámetro y realice el test estadístico correspondiente. Interprete sus resultados (6 puntos).
+
+En la Tabla \@ref(tab:table3) se reportan los estadísticos del análisis de devianza (likelihood ratio test) para el contraste entre el Modelo 1 y 4. La prueba de razón de verosimilitud se utiliza para comparar modelos anidados y determinar cuál se ajusta mejor a los datos [@peugh_practical_2010]. 
+
+La hipótesis nula para esta prueba es que el efecto aleatorio de la edad es igual a cero, mientras que la hipótesis alternativa sostiene que el efecto aleatorio es distinto de cero. Formalmente, las hipótesis son:
+
+$$
+H_0 : \sigma^2_{edad} = 0
+$$
+$$
+H_A: \sigma^2_{edad} \neq 0
+$$
+
+Los resultados del análisis muestran que la prueba de razón de verosimilitud es estadísticamente significativa, $\chi^2$ (2) = 75.918, $p$ < 0.001. Esto indica que el Modelo 4, que incluye efectos aleatorios para la edad, se ajusta significativamente mejor a los datos que el Modelo 1, que solo considera interceptos aleatorios. Además, el Modelo 4 presenta valores menores de AIC y BIC en comparación con el Modelo 1, lo que refuerza la idea de un mejor ajuste [@hox_multilevel_2017a]. Con todo, los resultados sugieren que es posible rechazar la $H_0$ y entregan evidencia favorable a la $H_A$ respecto a que el efecto aleatorio de la edad es diferente de cero y mejora el ajuste.
 
 ```{r table3, echo=FALSE, results='asis'}
 
@@ -540,10 +588,149 @@ fit_tab <- kableExtra::kable(fit_tab,
 fit_tab
 
 ```
+# Enunciado 4
+
+Una de las hipótesis que se trabajan en el artículo de Morgan y Buice [-@morgan_latin_2013] es que el peso de las mujeres en la fuerza laboral impacta de forma positiva el apoyo a que las mujeres ejerzan roles de liderazgo político. Evalúe esta hipótesis pero utilizando confianza política como variable dependiente. Para ello, estime un modelo en base al modelo 4 pero agregando un efecto fijo de la variable “Participación femenina en la fuerza laboral” (FLP). Reporte sus resultados en una tabla. Calcule un test para evaluar la significancia estadística de este efecto y señale a qué nivel de confianza sería estadísticamente significativo (7 puntos).
 
 
-\newpage
+En la Tabla \@ref(tab:table2) se muestran los resultados de los modelos multinivel para la confianza política, incluyendo el Modelo 5, que incorpora un efecto fijo de la participación femenina en la fuerza laboral (FLP). Los resultados del Modelo 5 indican que, aunque el efecto de la participación laboral femenina es positivo ($\beta = 0.61$), no es estadísticamente significativo al 95% de confianza ($SE = 0.73$, $p > 0.05$), manteniendo los demás predictores constantes.
 
+
+```{r table2, echo=FALSE, results='asis'}
+
+ccoef <- list(
+  "(Intercept)" = "Intercepto",
+  sexMujer = "Mujer (Ref.= Hombre)",
+  age = "Edad",
+  educ = "Nivel educacional (en años)",
+  employedEmpleado = "Empleado (Ref.= Desempleado)",
+  marriedSí = "Casado (Ref.= Otro)",
+  raceBlanco = "Blanco (Ref.= Otro)",
+  ideology = "Ideología política",
+  flp = "Participación laboral femenina",
+  fhouse = "Índice Freedom House",
+  "age:fhouse" = "Edad x Índice Freedom House"
+)
+
+
+texreg::texreg(list(model_4, model_5, model_6),
+               custom.model.names = c("Modelo 4",
+                                      "Modelo 5",
+                                      "Modelo 6"),
+               caption = paste("(\\#tab:table2)","Modelos multinivel para confianza política, edad e índice de democracía del país"),
+               stars = c(0.05, 0.01, 0.001),
+               custom.coef.map = ccoef,
+               custom.note = "\\item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. %stars \\\\ \\item Fuente: Elaboración propia en base a LAPOP 2008.",
+               threeparttable = T,
+               leading.zero = T,
+               float.pos = "h!",
+               use.packages = F,
+               booktabs = TRUE,
+               scalebox = 0.9,
+               custom.gof.names = c("AIC", 
+                                    "BIC", 
+                                    "Log-likelihood", 
+                                    "Num. obs", 
+                                    "Num. grupos: Países",
+                                    "Var: Países (Intercepto)",
+                                    "Var: Países Edad",
+                                    "Cov: Países (Intercepto), Edad",
+                                    "Var: Residual"
+                                     
+                                    ))
+```
+
+
+
+
+
+```{r include=FALSE}
+
+n2 <- length(unique(db$country))
+
+z_fpl <- (fixef(model_5)[9])/(sqrt(diag(vcov(model_5))[9]))
+
+pval_flp <- 2 * pt(-abs(z_fpl), df=n2-1-1, lower.tail = T)
+
+model_parameters(model_5, ci_method = "wald", summary = T)
+
+```
+
+Para evaluar la significancia estadística de este coeficiente, se realiza un test de Wald. La hipótesis nula ($H_0$) es que el coeficiente de la participación laboral femenina es igual a cero:
+
+$$
+H_0: \beta_{FLP} = 0
+$$
+
+El valor $z$ se calcula como el cociente entre el coeficiente estimado y su error estándar:
+
+$$
+z = \frac{\beta_{FLP}}{SE_{FLP}} = \frac{0.61}{0.73} = 0.83
+$$
+
+Este valor $z$ se compara con el valor crítico de una distribución normal estándar, que es 1.96 para un nivel de significancia $\alpha = 0.05$. Dado que el valor $z$ estimado (0.8356) es menor que el valor crítico de 1.96 y el valor $p$ asociado (`r round(pval_flp, 4)`) es mayor que 0.05, no se rechaza la hipótesis nula. Por lo tanto, con un 95% de confianza, no hay evidencia estadísticamente significativa para apoyar la hipótesis de que la participación laboral femenina tenga un efecto en la confianza política.
+
+Para determinar el nivel de confianza en el que el coeficiente sería estadísticamente significativo, usamos el valor $z$ = 0.8356, que corresponde a un nivel de significancia ($\alpha$) de 0.2027 o 20.27%. El nivel de confianza vendría siendo 1 - $\alpha$, lo que resuelve como 1 - 0.2027 = 0.7973. Por tanto, el efecto de la participación laboral femenina sería estadísticamente significativo solo con un nivel de confianza del 79.73%, lo cual es inferior al nivel de confianza convencial del 95%.
+
+# Enunciado 5
+
+En base al modelo 4, especifique un modelo que le permita evaluar si el efecto de la edad es moderado por el Índice de democracia a nivel país (Fredom House Index, fhouse).
+
+a) Reporte e interprete sustantivamente el intercepto en este modelo (4 puntos)
+
+En la Tabla \@ref(tab:table2) se muestran los resultados de los modelos multinivel para la confianza política incorporando el Modelo 6 de este enunciado. De acuerdo con este modelo, el intercepto de este modelo tiene un efecto positivo y estadísticamente significativo ($\beta$ = 0.61, $p$ < 0.05). Este coeficiente representa la confianza política promedio para un individuo típico de referencia, es decir, cuando todas las demás variables predictoras (como sexo, edad, nivel educativo, empleo, casado, raza, ideología, y el índice de democracia) están en sus valores de referencia o cero. En este caso, los valores de referencia serían: hombre, desempleado, no casado, de otra raza (no blanco), con ideología 0, y en un país con el nivel más bajo de democracia (fhouse = 0). 
+
+Además, el efecto de interacción entre la edad y el Índice de democracia también afecta la interpretación del intercepto, puesto que, sumado a lo anterior, el impacto de la edad depende del nivel de democracia de los países. Esto significa que, en países con mayores niveles de democracia, el impacto positivo de la edad sobre la confianza política será menor que en países con menores niveles de democracia, debido a la interacción negativa y estadísticamente significativa entre edad y fhouse ($\beta$ = -0.038, $p$ < 0.01).
+
+
+
+```{r fig4, echo=FALSE, fig.cap='Efecto marginal de edad moderado por índice de democracia del país', fig.align='center', out.width='80%'}
+
+plot_slopes(model_6, 
+            variables = "age", 
+            condition = "fhouse",
+            conf_level = .95) +
+  geom_hline(yintercept = 0.0, 
+             color = "red", 
+             linetype = "dashed") +
+  labs(y = "Efecto marginal edad",
+       x = "Índice Freedom House",
+       caption = "Fuente: Elaboración propia en base a LAPOP 2008",
+       title = NULL)
+
+```
+
+b) Reporte sus resultados a través de un gráfico e interprete sus resultados. ¿Qué se puede concluir en relación al efecto moderador del grado de democracia a nivel país sobre el efecto de la edad? (7 puntos).
+
+En la Figura \@ref(fig:fig4) se presentan los efectos marginales de la edad moderados por el nivel de democracia del país, según el Modelo 6. Los resultados sugieren que el efecto marginal de la edad varía significativamente de acuerdo con el nivel del Índice Freedom House (fhouse). En la Tabla \@ref(tab:table4) se muestran los efectos marginales estimados para cada valor del Índice Freedom House.
+
+```{r table4, echo=FALSE, results='asis'}
+
+slopes(model_6, variables = "age", by = "fhouse", newdata = "mean") %>% 
+  tidy() %>% 
+  select(4:8) %>% 
+  mutate(p = case_when(p.value < 0.05 & p.value > 0.01 ~ "< 0.05*",
+                       p.value < 0.01 & p.value > 0.001 ~ "< 0.01**",
+                       p.value < 0.001 ~ "< 0.001***",
+                       TRUE ~ "")) %>% 
+  select(-p.value) %>% 
+  kableExtra::kable(format = "latex", 
+                    col.names = c("Fhouse", "Estimación", "Error Estándar", "Estadístico", "p-value"),
+                    row.names = F,
+                    booktabs = T, align = 'c',
+                    caption = paste("(\\#tab:table4)","Efectos marginales de edad para valores de Índice Freedom House")) %>% 
+  kableExtra::kable_styling(latex_options = "hold_position", 
+                            position = "center") %>%
+  kableExtra::kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F) %>% 
+  column_spec(1, width = "2cm") %>%
+  row_spec(0, bold = T)
+
+```
+
+
+De este modo, en países con bajos niveles de democracia (fhouse = 1.0), el efecto de la edad es positivo pero no estadísticamente significativo ($\beta$ = 0.028, $p$ = 0.239).Sin embargo, a medida que aumenta el nivel de democracia (fhouse = 2.5 a 4.5), el efecto marginal de la edad se torna negativo y estadísticamente significativo. Por ejemplo, cuando fhouse es 3.0, el efecto es -0.048 ($p$ < 0.001) y se vuelve más negativo a medida que el nivel de democracia aumenta, alcanzando -0.105 en fhouse igual a 4.5 ($p$ < 0.01).
+
+Esto sugiere que en países con altos niveles de democracia, el impacto de la edad en la confianza política es negativo y más pronunciado, mientras que en países con bajos niveles de democracia, este efecto es insignificante. En definitiva, el grado de democracia modera significativamente el efecto de la edad sobre la confianza política, haciendo que este efecto sea más negativo en contextos más democráticos.
 
 
 # Referencias

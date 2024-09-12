@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.9.10)  10 SEP 2024 10:58
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.9.10)  12 SEP 2024 18:25
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -604,10 +604,13 @@ File: l3backend-pdftex.def 2024-05-08 L3 backend support: PDF output (pdfTeX)
 \l__pdf_internal_box=\box77
 ) (./01-guia.aux
 
+LaTeX Warning: Label `tab:table3' multiply defined.
+
+
 LaTeX Warning: Label `table:coefficients' multiply defined.
 
 
-LaTeX Warning: Label `tab:table3' multiply defined.
+LaTeX Warning: Label `tab:table4' multiply defined.
 
 )
 \openout1 = `01-guia.aux'.
@@ -754,60 +757,15 @@ File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
 
 {/Users/macbookair/Library/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/Users/macbookair/Library/TinyTeX/texmf-dist/fonts/enc/dvips/base/8r.enc} <../img/logo_isuc.png>]
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <12> on input line 241.
+(Font)              <12> on input line 206.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 241.
+(Font)              <8> on input line 206.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 241.
+(Font)              <6> on input line 206.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5> on input line 241.
+(Font)              <5> on input line 266.
 
-Underfull \hbox (badness 10000) in paragraph at lines 241--241
-
- []
-
-<01-guia_files/figure-latex/fig1-1.pdf, id=14, 469.755pt x 325.215pt>
-File: 01-guia_files/figure-latex/fig1-1.pdf Graphic file (type pdf)
-<use 01-guia_files/figure-latex/fig1-1.pdf>
-Package pdftex.def Info: 01-guia_files/figure-latex/fig1-1.pdf  used on input line 251.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-
-Overfull \hbox (16.7856pt too wide) in paragraph at lines 251--252
- [][] 
- []
-
-
-
-[2{/Users/macbookair/Library/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}{/Users/macbookair/Library/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}{/Users/macbookair/Library/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}]
-<01-guia_files/figure-latex/fig2-1.pdf, id=28, 469.755pt x 325.215pt>
-File: 01-guia_files/figure-latex/fig2-1.pdf Graphic file (type pdf)
-<use 01-guia_files/figure-latex/fig2-1.pdf>
-Package pdftex.def Info: 01-guia_files/figure-latex/fig2-1.pdf  used on input line 260.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-
-Overfull \hbox (16.7856pt too wide) in paragraph at lines 260--261
- [][] 
- []
-
-
-
-[3 <./01-guia_files/figure-latex/fig1-1.pdf>]
-<01-guia_files/figure-latex/fig3-1.pdf, id=39, 469.755pt x 325.215pt>
-File: 01-guia_files/figure-latex/fig3-1.pdf Graphic file (type pdf)
-<use 01-guia_files/figure-latex/fig3-1.pdf>
-Package pdftex.def Info: 01-guia_files/figure-latex/fig3-1.pdf  used on input line 269.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-
-Overfull \hbox (16.7856pt too wide) in paragraph at lines 269--270
- [][] 
- []
-
-
-
-[4 <./01-guia_files/figure-latex/fig2-1.pdf>]
-
-[5 <./01-guia_files/figure-latex/fig3-1.pdf>]
-Underfull \hbox (badness 10000) in paragraph at lines 322--322
+Underfull \hbox (badness 10000) in paragraph at lines 266--266
 
  []
 
@@ -816,134 +774,192 @@ LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 
 
-[6]
+[2{/Users/macbookair/Library/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}{/Users/macbookair/Library/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}]
+<01-guia_files/figure-latex/fig1-1.pdf, id=37, 469.755pt x 325.215pt>
+File: 01-guia_files/figure-latex/fig1-1.pdf Graphic file (type pdf)
+<use 01-guia_files/figure-latex/fig1-1.pdf>
+Package pdftex.def Info: 01-guia_files/figure-latex/fig1-1.pdf  used on input line 284.
+(pdftex.def)             Requested size: 362.37598pt x 250.87286pt.
+
+
+[3{/Users/macbookair/Library/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}]
+
+[4 <./01-guia_files/figure-latex/fig1-1.pdf>]
+<01-guia_files/figure-latex/fig2-1.pdf, id=62, 469.755pt x 325.215pt>
+File: 01-guia_files/figure-latex/fig2-1.pdf Graphic file (type pdf)
+<use 01-guia_files/figure-latex/fig2-1.pdf>
+Package pdftex.def Info: 01-guia_files/figure-latex/fig2-1.pdf  used on input line 313.
+(pdftex.def)             Requested size: 362.37598pt x 250.87286pt.
+
+
+[5 <./01-guia_files/figure-latex/fig2-1.pdf>]
+<01-guia_files/figure-latex/fig3-1.pdf, id=79, 469.755pt x 325.215pt>
+File: 01-guia_files/figure-latex/fig3-1.pdf Graphic file (type pdf)
+<use 01-guia_files/figure-latex/fig3-1.pdf>
+Package pdftex.def Info: 01-guia_files/figure-latex/fig3-1.pdf  used on input line 355.
+(pdftex.def)             Requested size: 362.37598pt x 250.87286pt.
+
+
+[6 <./01-guia_files/figure-latex/fig3-1.pdf>]
 
 [7]
-LaTeX Font Info:    Trying to load font information for T1+pcr on input line 368.
+Underfull \hbox (badness 10000) in paragraph at lines 476--476
+
+ []
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+
+
+[8]
+
+[9]
+<01-guia_files/figure-latex/fig4-1.pdf, id=124, 469.755pt x 325.215pt>
+File: 01-guia_files/figure-latex/fig4-1.pdf Graphic file (type pdf)
+<use 01-guia_files/figure-latex/fig4-1.pdf>
+Package pdftex.def Info: 01-guia_files/figure-latex/fig4-1.pdf  used on input line 516.
+(pdftex.def)             Requested size: 362.37598pt x 250.87286pt.
+
+
+[10 <./01-guia_files/figure-latex/fig4-1.pdf>]
+
+[11]
+LaTeX Font Info:    Trying to load font information for T1+pcr on input line 585.
 (/Users/macbookair/Library/TinyTeX/texmf-dist/tex/latex/psnfss/t1pcr.fd
 File: t1pcr.fd 2001/06/04 font definitions for T1/pcr.
 )
 LaTeX Font Info:    Font shape `T1/pcr/m/it' in size <12> not available
-(Font)              Font shape `T1/pcr/m/sl' tried instead on input line 404.
-LaTeX Font Info:    Trying to load font information for TS1+pcr on input line 436.
+(Font)              Font shape `T1/pcr/m/sl' tried instead on input line 621.
+LaTeX Font Info:    Trying to load font information for TS1+pcr on input line 652.
 (/Users/macbookair/Library/TinyTeX/texmf-dist/tex/latex/psnfss/ts1pcr.fd
 File: ts1pcr.fd 2001/06/04 font definitions for TS1/pcr.
 )
 LaTeX Font Info:    Font shape `T1/pcr/b/it' in size <12> not available
-(Font)              Font shape `T1/pcr/b/sl' tried instead on input line 531.
+(Font)              Font shape `T1/pcr/b/sl' tried instead on input line 747.
 LaTeX Info: Symbol \textasciigrave not provided by
             font family pcr in TS1 encoding.
-            Default family used instead on input line 774.
-LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 774.
+            Default family used instead on input line 953.
+LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 953.
 (/Users/macbookair/Library/TinyTeX/texmf-dist/tex/latex/base/t1cmtt.fd
 File: t1cmtt.fd 2023/04/13 v2.5m Standard LaTeX font definitions
 )
-LaTeX Font Info:    Trying to load font information for TS1+cmtt on input line 774.
+LaTeX Font Info:    Trying to load font information for TS1+cmtt on input line 953.
 (/Users/macbookair/Library/TinyTeX/texmf-dist/tex/latex/base/ts1cmtt.fd
 File: ts1cmtt.fd 2023/04/13 v2.5m Standard LaTeX font definitions
 )
 LaTeX Info: Symbol \textasciigrave not provided by
             font family pcr in TS1 encoding.
-            Default family used instead on input line 774.
+            Default family used instead on input line 953.
 
-Overfull \vbox (1.40485pt too high) detected at line 797
- []
-
-
-
-[8]
-Underfull \vbox (badness 10000) detected at line 797
- []
-
-
-Underfull \vbox (badness 10000) detected at line 797
- []
-
-
-
-[9]
-Underfull \vbox (badness 10000) detected at line 797
- []
-
-
-Underfull \vbox (badness 10000) detected at line 797
- []
-
-
-
-[10]
-Underfull \vbox (badness 10000) detected at line 797
- []
-
-
-Underfull \vbox (badness 10000) detected at line 797
- []
-
-
-
-[11]
-Underfull \vbox (badness 10000) detected at line 797
- []
-
-
-Underfull \vbox (badness 10000) detected at line 797
+Overfull \vbox (1.40485pt too high) detected at line 1059
  []
 
 
 
 [12]
-Underfull \vbox (badness 10000) detected at line 797
+Underfull \vbox (badness 10000) detected at line 1059
  []
 
 
-Underfull \vbox (badness 10000) detected at line 797
+Underfull \vbox (badness 10000) detected at line 1059
  []
 
 
 
 [13]
-Underfull \vbox (badness 10000) detected at line 797
+Underfull \vbox (badness 10000) detected at line 1059
  []
 
 
-Underfull \vbox (badness 10000) detected at line 797
+Underfull \vbox (badness 10000) detected at line 1059
  []
 
 
 
 [14]
-Underfull \vbox (badness 10000) detected at line 797
+Underfull \vbox (badness 10000) detected at line 1059
  []
 
 
-Underfull \vbox (badness 10000) detected at line 797
+Underfull \vbox (badness 10000) detected at line 1059
  []
 
 
 
 [15]
-Underfull \vbox (badness 10000) detected at line 797
+Underfull \vbox (badness 10000) detected at line 1059
  []
 
 
-Underfull \vbox (badness 10000) detected at line 797
+Underfull \vbox (badness 10000) detected at line 1059
  []
 
 
 
 [16]
-Underfull \vbox (badness 10000) detected at line 797
+Underfull \vbox (badness 10000) detected at line 1059
  []
 
 
-Underfull \vbox (badness 10000) detected at line 797
+Underfull \vbox (badness 10000) detected at line 1059
  []
 
 
 
 [17]
+Underfull \vbox (badness 10000) detected at line 1059
+ []
 
-[18] (./01-guia.aux)
+
+Underfull \vbox (badness 10000) detected at line 1059
+ []
+
+
+
+[18]
+Underfull \vbox (badness 10000) detected at line 1059
+ []
+
+
+Underfull \vbox (badness 10000) detected at line 1059
+ []
+
+
+
+[19]
+Underfull \vbox (badness 10000) detected at line 1059
+ []
+
+
+Underfull \vbox (badness 10000) detected at line 1059
+ []
+
+
+
+[20]
+Underfull \vbox (badness 10000) detected at line 1059
+ []
+
+
+Underfull \vbox (badness 10000) detected at line 1059
+ []
+
+
+
+[21]
+Underfull \vbox (badness 10000) detected at line 1059
+ []
+
+
+Underfull \vbox (badness 10000) detected at line 1059
+ []
+
+
+
+[22]
+
+[23] (./01-guia.aux)
  ***********
 LaTeX2e <2024-06-01> patch level 2
 L3 programming layer <2024-08-30>
@@ -953,18 +969,18 @@ LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 19553 strings out of 475478
- 320810 string characters out of 5774272
- 843710 words of memory out of 5000000
- 41735 multiletter control sequences out of 15000+600000
- 619721 words of font info for 151 fonts, out of 8000000 for 9000
+ 19701 strings out of 475478
+ 322543 string characters out of 5774272
+ 854907 words of memory out of 5000000
+ 41761 multiletter control sequences out of 15000+600000
+ 623846 words of font info for 213 fonts, out of 8000000 for 9000
  36 hyphenation exceptions out of 8191
- 83i,14n,93p,1004b,598s stack positions out of 10000i,1000n,20000p,200000b,200000s
- </Users/macbookair/Library/TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/tctt1200.600pk></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmmi12.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmmi8.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr12.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr8.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy10.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy6.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy8.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/urw/courier/ucrb8a.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/urw/courier/ucrbo8a.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/urw/courier/ucrro8a.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on 01-guia.pdf (18 pages, 242151 bytes).
+ 83i,14n,93p,1051b,598s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ </Users/macbookair/Library/TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/tctt1200.600pk></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmmi12.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmmi8.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr12.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr6.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr8.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy10.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy6.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy8.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/urw/courier/ucrb8a.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/urw/courier/ucrbo8a.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/urw/courier/ucrro8a.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></Users/macbookair/Library/TinyTeX/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on 01-guia.pdf (23 pages, 297135 bytes).
 PDF statistics:
- 229 PDF objects out of 1000 (max. 8388607)
- 170 compressed objects within 2 object streams
- 35 named destinations out of 1000 (max. 500000)
- 34853 words of extra memory for PDF output out of 35830 (max. 10000000)
+ 320 PDF objects out of 1000 (max. 8388607)
+ 251 compressed objects within 3 object streams
+ 64 named destinations out of 1000 (max. 500000)
+ 34898 words of extra memory for PDF output out of 35830 (max. 10000000)
 
