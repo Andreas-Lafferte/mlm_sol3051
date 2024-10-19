@@ -5,10 +5,10 @@ subtitle: |
  Análisis de Datos Multinivel - SOL3051
 date: "`r Sys.setlocale('LC_TIME', 'es_ES.UTF-8'); format(Sys.Date(), '%A %d, %B %Y')`"
 author: |
- |  Estudiante [Andreas Laffert](mailto:alaffertt@estudiante.uc.cl)
  |  Profesora Camila Ortiz
  | Ayudante Andres González
  | \vspace{8cm}
+ |  Estudiante [Andreas Laffert](mailto:alaffertt@estudiante.uc.cl)
 output:
   bookdown::pdf_document2:
     template: null

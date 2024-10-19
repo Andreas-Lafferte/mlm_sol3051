@@ -1,0 +1,704 @@
+---
+title: |
+ | \vspace{5cm} Guía N°2
+subtitle: |
+ Análisis de Datos Multinivel - SOL3051
+date: "`r Sys.setlocale('LC_TIME', 'es_ES.UTF-8'); format(Sys.Date(), '%A %d, %B %Y')`"
+author: |
+ |  Estudiante [Andreas Laffert](mailto:alaffertt@estudiante.uc.cl)
+ |  Profesora Camila Ortiz
+ | Ayudante Andres González
+ | \vspace{8cm}
+output:
+  bookdown::pdf_document2:
+    template: null
+    toc: false
+    keep_tex: true
+    number_sections: false
+bibliography: ../input/bib/magister.bib     
+csl: ../input/bib/apa6.csl    
+linkcolor: DarkSlateBlue
+urlcolor: DarkSlateBlue
+linestretch: '1.15'
+link-citations: yes
+fontsize: 12pt
+papersize: a4
+geometry: "left=2.54cm,right=2.54cm,top=2.54cm,bottom=2.54cm"
+lang: en
+fig-height: 4
+fig-width: 7.5
+header-includes:
+  - \usepackage{titling}
+  - \pretitle{\begin{center}\LARGE\includegraphics[width=7cm]{../img/logo_isuc.png}\\[\bigskipamount]}
+  - \posttitle{\end{center}}
+  - \usepackage{times}           
+  - \usepackage{caption}
+  - \usepackage{floatrow} 
+  - \usepackage{float}
+  - \floatsetup[figure]{capposition=top}
+  - \floatsetup[table]{capposition=top}
+  - \floatplacement{figure}{H}
+  - \floatplacement{table}{h}
+  - \usepackage{graphicx}
+  - \usepackage{booktabs}
+  - \usepackage{longtable}
+  - \usepackage{array}
+  - \usepackage{multirow}
+  - \usepackage{wrapfig}
+  - \usepackage{colortbl}
+  - \usepackage{pdflscape}
+  - \usepackage{tabu}
+  - \usepackage{fancyhdr}
+  - \fancyhead{} 
+  - \usepackage{threeparttable}
+editor_options: 
+  chunk_output_type: console
+---
+
+\pagebreak
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F,
+                      warning = F,
+                      error = F, 
+                      message = F) 
+```
+
+
+
+```{r paquetes, include=FALSE}
+if (! require("pacman")) install.packages("pacman")
+
+pacman::p_load(tidyverse, 
+               magrittr,
+               sjmisc, 
+               sjPlot, 
+               lme4, 
+               easystats, 
+               influence.ME, 
+               broom.mixed, 
+               here,
+               marginaleffects,
+               ggeffects,
+               texreg, 
+               ggdist,
+               misty)
+
+options(scipen=999)
+rm(list = ls())
+```
+
+
+
+```{r funciones, include=FALSE}
+
+miles <- function(x) {
+  format(round(as.numeric(x),0), big.mark = ".")
+}
+
+decimales <- function(x) {
+  format(round(as.numeric(x), 2), decimal.mark = ",")
+}
+
+# set theme
+
+theme_set(theme_ggdist())
+
+options(knitr.kable.NA = "")
+options(knitr.table.format="latex")
+
+```
+
+```{r datos, include=FALSE}
+load(file = here("input/data/Bressoux.RData"))
+
+names(Bressoux)
+glimpse(Bressoux)
+```
+
+```{r procesamiento, include=FALSE}
+
+# seleccionar ----
+
+db <- Bressoux %>% 
+  dplyr::select(ecole2, classe2, numeleve, fran4, rdblt2, 
+                frat, fille, sup, inter, arti, empl, ouvr,
+                autr, cmult) %>% 
+  sjlabelled::remove_all_labels() %>% 
+  janitor::clean_names() %>% 
+  as_tibble()
+ 
+# filtrar: no ----- 
+
+# recodificar y transformar: luego ----
+
+# fran4
+sjmisc::descr(db$fran4)
+
+# fille
+frq(db$fille)
+
+# rbdlt2
+frq(db$rdblt2)
+
+# clase multigrado
+frq(db$cmult)
+
+# hermanos
+frq(db$frat)
+
+# casos perdidos -----
+
+colSums(is.na(db))
+
+db <- na.omit(db)
+
+```
+
+
+# Enunciado 1
+
+Defina cuál es la mejor unidad de agrupamiento (escuelas o clases) para modelar el puntaje en la prueba de francés con modelos multinivel. Esta será la unidad de agrupamiento que utilizará para realizar las actividades de la guía. Reporte sus resultados, interprete y concluya (4 puntos).
+
+
+```{r icc0, echo=FALSE, include=FALSE}
+# Null model
+model_01 <- lmer(fran4 ~ 1 + (1 | ecole2), 
+                data = db, REML = T)
+model_02 <- lmer(fran4 ~ 1 + (1 | classe2), 
+                data = db, REML = T)
+
+performance::icc(model_01, by_group = T)
+## ICC ecol2 = 0.066
+performance::icc(model_02, by_group = T)
+## ICC classe2 = 0.101
+```
+
+En la Tabla \@ref(tab:table1) se muestran los resultados de los modelos multinivel sin predictores para el puntaje en la prueba de francés con diferentes unidades de agrupamiento: escuelas y clases. Siguiendo a  Hox et al. [-@hox_multilevel_2017a p. 13], la correlación intraclase (ICC) para ambos modelos es la siguiente:
+
+
+$$ICC_{ecole2} = \frac{\sigma^2_{\mu_0}}{\sigma^2_{\mu_0} + \sigma^2_{\epsilon}} = \frac{0.92}{0.92+0.065} = 0.066$$
+$$ICC_{classe2} = \frac{\sigma^2_{\mu_0}}{\sigma^2_{\mu_0} + \sigma^2_{\epsilon}} = \frac{0.89}{0.89+ 0.10} = 0.101$$
+
+Donde $\sigma^2_{\mu_0}$ representa la varianza a nivel grupal (escuelas o clases), y $\sigma^2_{\epsilon}$ es la varianza a nivel individual. 
+
+Los resultados sugieren que la mejor unidad de agrupamiento para conducir un análisis multinivel del puntaje en la prueba de francés son las clases, debido a que su ICC es mayor y presenta un mejor ajuste. La ICC para el modelo nulo que anida por escuelas es igual a 0.066, lo cual indica la cantidad de varianza del puntaje en prueba de francés que puede atribuirse a la estructura de agrupación en la población, en este caso, las escuelas. Esto significa que una proporción relativamente pequeña (6.6%) de la varianza total de la prueba de francés se asocia a características específicas de las escuelas. Por su parte, la ICC para el modelo nulo que anida por clases es igual a 0.101, lo que se traduce en que un 10.1% de la varianza de la prueba de francés se asocia a diferencias entre las clases, indicando una mayor variabilidad en el puntaje de francés a este nivel de agrupamiento. Además, los indicadores de ajuste de criterios de información (AIC y BIC) muestran que el Modelo Nulo con clases como unidad de agrupamiento tiene un mejor ajuste que el Modelo Nulo con escuelas, como se observa en sus menores valores. En definitiva, se utilizará a las clases como unidad de anidamiento en los análisis siguientes.
+
+
+
+```{r table1, results='asis'}
+
+ccoef <- list(
+  "(Intercept)" = "Intercepto")
+
+texreg::texreg(list(model_01, model_02),
+               custom.model.names = c("Modelo Nulo (ecole2)",
+                                      "Modelo Nulo (classe2)"),
+               caption = paste("(\\#tab:table1)","Modelos multinivel nulos con diferentes unidades de agrupación para puntaje en prueba de francés"),
+               stars = c(0.05, 0.01, 0.001),
+               custom.coef.map = ccoef,
+               custom.note = "\\item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. %stars \\\\ \\item Fuente: Elaboración propia en base a datos de Bressoux 2017.",
+               threeparttable = T,
+               leading.zero = T,
+               float.pos = "h!",
+               use.packages = F,
+               booktabs = TRUE,
+               scalebox = 0.9)
+
+
+```
+
+
+
+
+El uso de modelos multinivel en este análisis se justifica tanto por razones sustantivas como metodológicas. En términos sustantivos, el coeficiente de correlación intraclase (ICC) del 10.1% indica que una parte relevante de la variabilidad en el puntaje de francés está asociada a las diferencias entre clases, lo que hace necesario modelar esta variabilidad a nivel contextual. Desde una perspectiva metodológica, los modelos multinivel permiten modelar estructuras de datos jerárquicos y evitar errores en las estimaciones. Ignorar esta estructura (estudiantes anidados en clases) y emplear estimadores convencionales, como OLS, puede introducir sesgos. En ese sentido, aplicar métodos estadísticos convencionales a datos jerárquicos viola el supuesto de independencia de los residuos, lo que resulta en errores estándar mal estimados y valores p más pequeños de lo apropiado, incrementando el riesgo de cometer un error de tipo I [@finch_multilevel_2014].
+
+
+
+# Enunciado 2
+
+Tomando en consideración la estructura de los datos y usando "clase multigrado" como predictor, realice las siguientes actividades:
+
+a) Estime un modelo de regresión lineal simple con "clase multigrado" como predictor y "puntaje en la prueba de francés" como variable resultado. Luego, estime un modelo de regresión multinivel con las mismas variables (agrupando en la unidad escogida en la pregunta anterior). Reporte sus resultados en una tabla y compare los coeficientes de regresión. Argumente a qué se deben las diferencias en las estimaciones obtenidas (7 puntos).
+
+
+```{r m_ols_m1, include=FALSE}
+# Modelo lineal: cmult
+model_ols <- lm(fran4 ~ 1 + cmult, data = db)
+
+# Modelo 1: cmult
+model_1 <- lmer(fran4 ~ 1 + cmult + (1 | classe2),
+                data = db, 
+                REML = T)
+
+```
+
+En la Tabla \@ref(tab:table2) se presentan los resultados del modelo OLS y multinivel para el puntaje en la prueba de francés. Por un lado, los resultados del Modelo 1 (OLS) sugieren que el efecto de la clase multigrado en el puntaje de la prueba de francés es positivo y estadísticamente significativo ($\beta$ = 0.34, $p$ < 0.001). En detalle, los estudiantes que pertenecen a una clase multigrado obtienen, en promedio, 0.34 puntos adicionales en el puntaje de la prueba de francés en comparación con estudiantes que no están en una clase multigrado, con una relación estadísticamente significativa al 99.9% de confianza. 
+
+Por otro lado, los resultados del Modelo 2 (MLM) indican que el efecto de la clase multigrado es positivo y estadísticamente significativo ($\beta$ = 0.32, $p$ < 0.05). En este caso, los estudiantes pertenecientes a una clase multigrado tienen en promedio 0.32 puntos adicionales en la prueba de francés en comparación a aquellos estudiantes que no están en una clase multigrado, asociación estadísticamente signficativa a un 95% de confianza. 
+
+
+```{r table2, echo=FALSE, results='asis'}
+
+ccoef <- list(
+  "(Intercept)" = "Intercepto",
+  cmult = "Curso multigrado (Ref.= Mismo grado)")
+
+
+texreg::texreg(list(model_ols, model_1),
+               custom.model.names = c("Modelo 1",
+                                      "Modelo 2"),
+               caption = paste("(\\#tab:table2)","Comparación de Modelos OLS y MLM para puntaje en prueba de fránces y clase multigrado"),
+               stars = c(0.05, 0.01, 0.001),
+               custom.coef.map = ccoef,
+               custom.note = "\\item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. %stars \\\\ \\item Fuente: Elaboración propia en base a datos de Bressoux 2017.",
+               threeparttable = T,
+               leading.zero = T,
+               float.pos = "H",
+               use.packages = F,
+               booktabs = TRUE,
+               scalebox = 0.9,
+               custom.gof.rows = list("Estimador" = c("OLS", "MLM")))
+
+
+```
+
+
+
+El coeficiente de regresión de clase multigrado difere entre ambos modelos, lo que se asocia a cómo estos estimadores tratan la estructura de los datos. En el Modelo 1 (OLS), el coeficiente es 0.34 y altamente significativo ($p$ < 0.001); sin embargo, este modelo no tiene en cuenta la estructura jerárquica de los datos, lo que produce estimaciones sesgadas. Al no cumplirse el supuesto de independencia residual debido a la anidación de estudiantes en clases, los errores estándar y los valores p están incorrectamente estimados, incrementando el riesgo de cometer un error Tipo I, como indican Finch et al. [-@finch_multilevel_2014]. 
+
+El Modelo 2 (MLM) reconoce la estructura jerárquica de los datos, con estudiantes anidados en clases, lo que permite corregir los sesgos que genera el OLS al no controlar por las diferencias entre clases. En este modelo, se incluye un intercepto aleatorio para captar las diferencias _entre_ clases, permitiendo una mejor estimación del efecto de la clase multigrado sobre el puntaje en la prueba de francés. Así, el coeficiente de clase multigrado disminuye tanto en tamaño (0.32) como en significancia estadística, aunque se mantiene la dirección del efecto y su relevancia sustantiva. Con todo, el ajuste por la estructura jerárquica de los datos elimina parte de la variabilidad no explicada por el modelo OLS.
+
+
+
+b) Obtenga manualmante el efecto de la dummy "clase multigrado" en la estimación multinivel. Reporte sus resultados e interprete (6 puntos).
+
+```{r, echo=TRUE}
+var_comp <- as.data.frame(VarCorr(model_1))
+var_resid <- var_comp$vcov[2]
+var_bet <- var_comp$vcov[1]
+
+grupos <- db %>%  
+  group_by(classe2) %>% 
+  summarise(nj=n(), 
+            fran4_j = mean(fran4, na.rm = T), 
+            cmult_j = mean(cmult, na.rm = T))
+
+grupos$Vj <- var_resid /grupos$nj
+grupos$Deltaj <- grupos$Vj + var_bet
+
+fran4_jp <- sum(grupos$fran4_j*grupos$Deltaj^-1)/sum(grupos$Deltaj^-1)
+
+cmult_jp <- sum(grupos$cmult_j*grupos$Deltaj^-1)/sum(grupos$Deltaj^-1)
+
+beta01_m <- sum(grupos$Deltaj^-1*(grupos$cmult_j - cmult_jp)*(grupos$fran4_j - fran4_jp))/ 
+  (sum(grupos$Deltaj^-1*(grupos$cmult_j - cmult_jp)^2))
+
+beta01_m
+```
+
+La estimación manual del efecto de la variable _dummy_ clase multigrado (0 = no pertenece, 1 = pertenece) es igual a `r beta01_m`, que corresponde al efecto promedio de pertenecer a una clase multigrado sobre el puntaje de la prueba de francés en referencia a no estar en una clase multigrado, lo que corresponde a un efecto _between_ clases. Este resultado es igual al obtenido en el Modelo 2 de la Tabla \@ref(tab:table2) ya que el procedimiento de estimación es el mismo. 
+
+
+# Enunciado 3
+
+Estime el efecto de "clase multigrado" sobre el "puntaje en la prueba de francés", controlando por el efecto del género de los estudiantes y de la repitencia. Utilice la estrategia de centrado que corresponda. Reporte sus resultados e interprete sustantivamente el efecto de "clase multigrado" (6 puntos).
+
+```{r m2, include=FALSE}
+# Centrado GMC
+db <- db %>% 
+  mutate(cmult_mean = mean(cmult, na.rm = T),
+         cmult_cgm = cmult - cmult_mean,
+         fille_mean = mean(fille, na.rm = T),
+         fille_cgm = fille - fille_mean,
+         rdblt2_mean = mean(rdblt2, na.rm = T),
+         rdblt2_cgm = rdblt2 - rdblt2_mean)
+
+summary(db$cmult_cgm)
+datawizard::center(db$cmult) # ok
+
+model_2 <- lmer(fran4 ~ 1 + cmult_cgm + fille_cgm +
+                rdblt2_cgm + (1 | classe2),
+                data = db, 
+                REML = T)
+
+```
+
+En la Tabla \@ref(tab:table3) se muestran los resultados del modelo multinivel para el puntaje en la prueba de francés a partir de la clase multigrado, género y repitencia del curso. Los resultados sugieren que el efecto de la clase multigrado, centrado a la gran media, es positivo pero no estadísticamente significativo ($\beta$ = 0.30, $p$ > 0.05). Este coeficiente indica que los estudiantes que pertenecen a clases multigrado obtienen, en promedio, 0.3 puntos adicionales en el puntaje de la prueba de francés en comparación con los estudiantes que no están en clases multigrado, respecto a la gran media y controlando por el resto de las variables (esto es, estudiantes con el mismo género y repitencia), aunque esta relación no es estadísticamente significativa.
+
+```{r table3, echo=FALSE, results='asis'}
+
+ccoef <- list(
+  "(Intercept)" = "Intercepto",
+  cmult_cgm = "Curso multigrado CGM (Ref.= Mismo grado)",
+  fille_cgm = "Mujer CGM (Ref.= Hombre)",
+  rdblt2_cgm = "Repitencia CGM (Ref.= No repitencia)")
+
+
+texreg::texreg(list(model_2),
+               custom.model.names = c("Modelo 3"),
+               caption = paste("(\\#tab:table3)","Modelo multinivel para puntaje en prueba de francés, género y repitencia del curso"),
+               stars = c(0.05, 0.01, 0.001),
+               custom.coef.map = ccoef,
+               custom.note = "\\item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. %stars \\\\ \\item Fuente: Elaboración propia en base a datos de Bressoux 2017.",
+               threeparttable = T,
+               leading.zero = T,
+               float.pos = "H",
+               use.packages = F,
+               booktabs = TRUE,
+               scalebox = 0.9)
+
+
+```
+
+
+La estrategia de centrado que se utilizó fue el centrado a la gran media (CGM) para todos los predictores del modelo. La razón principal es que el interés de este enunciado se enfoca en el efecto de la clase multigrado, que es una variable de nivel 2, y al no haber otra estructura de anidación superior, CGM es la única manera adecuada de centrar este predictor. Si se hubiera utilizado el centrado a la media grupal (CWC), no habríamos capturado el efecto between clases, que es lo que nos interesa en este caso. Las variables de nivel 1 (género y repitencia) también fueron centradas a su gran media, ya que con esta estrategia sus componentes _between_ y _within_ permiten que estas variables actúen como controles apropiados en la estimación del efecto de la clase multigrado, que es de nivel 2. Específicamente, este centrado asegura que las diferencias observadas en el puntaje de francés entre estudiantes de clases multigrado y clases de un solo grado no se vean influidas por las diferencias en género o repitencia _between_ clases, lo que refuerza la robustez de la estimación del efecto de la variable de nivel 2 [@enders_centering_2007].
+
+
+# Enunciado 4
+
+Genere una variable dummy que identifique a quienes tienen padres de ocupaciones profesionales o intermedias, y etiquétela como "p_profint". Tomando como base el modelo de la pregunta 3), estime el efecto contextual de esta variable. Reporte sus resultados en una tabla e interprete sustantivamente este efecto (7 puntos).
+
+
+
+```{r m3, include=FALSE}
+# employed
+frq(db$sup)
+frq(db$inter)
+
+db <- db %>% 
+  mutate(p_profint = if_else(sup == 1 | inter == 1, 1, 0))
+
+db$gm_p_profint <- mean(db$p_profint, use="complete.obs")
+db$p_profint_cgm <- db$p_profint - db$gm_p_profint
+db <- db %>% group_by(classe2) %>%
+  mutate(cm_p_profint = mean(p_profint))
+
+model_3 <- lmer(fran4 ~ cmult_cgm + fille_cgm + 
+                  rdblt2_cgm + p_profint_cgm + 
+                  cm_p_profint + (1|classe2), 
+                data = db, 
+                REML = T)
+```
+
+
+En la Tabla \@ref(tab:table4) se muestran los resultados del modelo multinivel para el puntaje en la prueba de francés, incluyendo la clase multigrado, el género, la repitencia y los padres con ocupaciones profesionales o intermedias como covariables. En este modelo, se incluyó el predictor de nivel individual "padres con ocupaciones profesionales o intermedias" de dos maneras: centrado a su gran media (CGM) y su media grupal (CM). Al incluir la media grupal del predictor de nivel 1 junto con el predictor CGM, obtenemos simultáneamente los efectos _within_ y _contextual_ del predictor respectivo. El efecto contextual refleja el impacto del promedio de padres con ocupaciones profesionales o intermedias en las clases sobre el puntaje en la prueba de francés, controlando por este predictor a nivel individual.
+
+
+
+```{r table4, echo=FALSE, results='asis'}
+
+ccoef <- list(
+  "(Intercept)" = "Intercepto",
+  cmult_cgm = "Curso multigrado CGM (Ref.= Mismo grado)",
+  fille_cgm = "Mujer CGM (Ref.= Hombre)",
+  rdblt2_cgm = "Repitencia CGM (Ref.= No repitencia)",
+  p_profint_cgm = "Padres con P/I CGM (Ref.= Sin padres P/I)",
+  cm_p_profint = "Padres con P/I CM (Ref.= Sin padres P/I)")
+
+
+texreg::texreg(list(model_3),
+               custom.model.names = c("Modelo 4"),
+               caption = paste("(\\#tab:table4)","Modelo multinivel para puntaje en prueba de francés, género, repitencia del curso y padres con ocupaciones profesionales o intermedias"),
+               stars = c(0.05, 0.01, 0.001),
+               custom.coef.map = ccoef,
+               custom.note = "\\item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. %stars \\\\ \\item Fuente: Elaboración propia en base a datos de Bressoux 2017. \\\\ \\item P/I = Ocupaciones profesionales o intermedias",
+               threeparttable = T,
+               leading.zero = T,
+               float.pos = "H",
+               use.packages = F,
+               booktabs = TRUE,
+               scalebox = 0.9)
+
+
+```
+
+
+Los resultados del Modelo 4 sugieren que el efecto contextual de los padres con ocupaciones profesionales o intermedias es positivo, pero no estadísticamente significativo ($\beta$ = 1.01, $p$ > 0.005). En detalle, _ceteris paribus_, este coeficiente nos dice que el efecto de la ocupación de los padres, respecto a la media de la clase, aumenta el puntaje en la prueba de francés en 1.01 puntos promedio para quienes tienen padres con ocupaciones profesionales o intermedias en comparación a quienes no los tienen, aunque esta relación no es estadísticamente significativa al 95% de confianza. Este efecto contextual permite comparar las diferencias en las medias de los cursos, condicionado por la ocupación de los padres. Al controlar por los demás predictores, este efecto se da en contextos donde los estudiantes pertenecen a cursos distintos, pero comparten el mismo sexo y condición de repitencia.
+
+
+# Enunciado 5
+
+Agregue al modelo de la pregunta 4) los términos necesarios para estimar una interacción entre el efecto within y contextual de "padres con ocupaciones profesionales o intermedias" sobre el puntaje en la prueba de francés.
+
+a) Estime el modelo utilizando la estrategia de centrado que corresponda y reporte sus resultados en una tabla (6 puntos).
+
+
+```{r m4, include=FALSE}
+
+model_4 <- lmer(fran4 ~ cmult_cgm + fille_cgm + 
+                  rdblt2_cgm + p_profint_cgm * 
+                  cm_p_profint + (p_profint_cgm + 1|classe2), 
+                data = db,
+                REML = T)
+```
+
+
+En la Tabla \@ref(tab:table5) se muestran los resultados del modelo multinivel para el puntaje en la prueba de francés usando el mismo modelo que el enunciado 4. Sin embargo, en este modelo se agrega una interacción entre el efecto CGM de clase multigrado y su media grupal, además de un efecto aleatorio de la clase multigrado centrada a su gran media. El coeficiente de la interacción ($\beta$ = -1.21) indica que el efecto del nivel de ocupación profesional de los padres dentro de los grupos de estudiantes (efecto _within_) disminuye a medida que aumenta el efecto _contextual_ de las ocupaciones de los padres en el nivel de clase, aunque esta relación no es estadísticamente signiticativa a un 95% de confianza. Sustantivamente, esto significa que, aunque los estudiantes con padres en ocupaciones profesionales o intermedias tienden a tener un mejor rendimiento, este efecto se reduce en clases donde el promedio de ocupaciones de los padres es más alto.
+
+
+
+```{r table5, echo=FALSE, results='asis'}
+
+ccoef <- list(
+  "(Intercept)" = "Intercepto",
+  cmult_cgm = "Curso multigrado CGM (Ref.= Mismo grado)",
+  fille_cgm = "Mujer CGM (Ref.= Hombre)",
+  rdblt2_cgm = "Repitencia CGM (Ref.= No repitencia)",
+  p_profint_cgm = "Padres con P/I CGM (Ref.= Sin padres P/I)",
+  cm_p_profint = "Padres con P/I CM (Ref.= Sin padres P/I)",
+  "p_profint_cgm:cm_p_profint" = "Padres con P/I CGM x Padres con P/I CM")
+
+
+texreg::texreg(list(model_4),
+               custom.model.names = c("Modelo 4"),
+               caption = paste("(\\#tab:table5)","Modelo multinivel para puntaje en prueba de francés, género, repitencia del curso y padres con ocupaciones profesionales o intermedias con interacción"),
+               stars = c(0.05, 0.01, 0.001),
+               custom.coef.map = ccoef,
+               custom.note = "\\item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. %stars \\\\ \\item Fuente: Elaboración propia en base a datos de Bressoux 2017. \\\\ \\item P/I = Ocupaciones profesionales o intermedias",
+               threeparttable = T,
+               leading.zero = T,
+               float.pos = "H",
+               use.packages = F,
+               booktabs = TRUE,
+               scalebox = 0.9)
+
+
+```
+
+
+b) Grafique los efectos marginales derivados de la interacción e interprete sustantivamente los efectos within de "padres con ocupaciones profesionales o intermedias" (6 puntos)
+
+En la Figura \@ref(fig:fig1) se visualizan los efectos marginales derivados de la interacción entre el efecto _within_ de la ocupación de los padres y el efecto _contextual_ de esta variable. En línea con los resultados de la Tabla \@ref(tab:table5), la pendiente de la interacción es negativa, lo que implica que el efecto positivo de tener padres con ocupaciones profesionales o intermedias disminuye conforme el promedio de ocupaciones profesionales e intermedias en el contexto de la clase aumenta. Esto indica una relación inversa entre el contexto de la ocupación de los padres y el efecto _within_ de esta variable.
+
+Sustantivamente, esto significa que, aunque los estudiantes con padres en ocupaciones profesionales o intermedias tienden a obtener mejores puntajes, este efecto se atenúa en clases donde más estudiantes tienen padres con ocupaciones similares. Inicialmente, cuando el efecto contextual es cero, el efecto _within_ es de 0.72, lo cual sugiere que dentro de una clase con un promedio nulo en la ocupación de los padres, los estudiantes cuyos padres tienen ocupaciones profesionales o intermedias obtienen, en promedio, 0.72 puntos adicionales en la prueba de francés en comparación con aquellos que no tienen padres en dichas ocupaciones.
+
+
+Sin embargo, a medida que el efecto _contextual_ aumenta, el efecto marginal del _within _disminuye y se aproxima a cero cuando el efecto _contextual_ alcanza un valor cercano a 0.4, lo que indica que, en contextos donde las ocupaciones profesionales son más comunes, la ventaja asociada a tener padres con estas ocupaciones desaparece. Este patrón sugiere que la ventaja de tener padres en ocupaciones profesionales es relevante en contextos de mayor diversidad ocupacional, pero se disipa en clases más homogéneas en términos de ocupación de los padres. El intervalo de confianza refleja que el efecto _within_ deja de ser significativamente distinto de cero cuando el contexto de ocupación de los padres es considerablemente alto (alrededor de 0.4).
+
+
+```{r fig1, echo=FALSE, fig.cap='Efecto marginal del efecto within de ocupación padres moderado por su media grupal', fig.align='center', out.width='80%'}
+
+plot_slopes(model_4, 
+            variables = "p_profint_cgm", 
+            condition = "cm_p_profint",
+            conf_level = .95,
+            re.form = NA) +
+  geom_hline(yintercept = 0, 
+             color = "red", 
+             linetype = "dashed") +
+  labs(y = "Efecto marginal del efecto within de ocupación de los padres",
+       x = "Efecto contextual de ocupación de los padres",
+       caption = "Fuente: Elaboración propia en base a datos de Bressoux 2017",
+       title = NULL)
+
+```
+
+
+
+# Enunciado 6
+
+Estime un modelo multinivel lo más parsimonioso posible para predecir el "puntaje en la prueba de francés" a partir de los efectos within del género, repitencia y hermanos de los estudiantes (codifique la variable hermanos como dummy, donde quienes tienen más de 1 hermano quedan asignados al 1, y quienes tienen 1 hermano o menos son la categoría de referencia).
+
+```{r m5, include=FALSE}
+db %<>%
+  mutate(frat = case_when(frat > 1 ~ 1,
+                          frat <= 1 ~ 0))
+
+db %<>% 
+  group_by(classe2) %>% 
+  mutate(fille_mean = mean(fille, na.rm = T),
+         fille_cwc = fille - fille_mean,
+         rdblt2_mean = mean(rdblt2, na.rm = T),
+         rdblt2_cwc = rdblt2 - rdblt2_mean,
+         frat_mean = mean(frat, na.rm = T),
+         frat_cwc = frat - frat_mean)
+
+model_5 <- lmer(fran4 ~ fille_cwc + rdblt2_cwc + frat_cwc + (1|classe2), 
+                data = db,
+                REML = T)
+```
+
+
+a) Reporte sus resultados en una tabla e interprete el intercepto fijo del modelo y el efecto within de "repitencia" (6 puntos).
+
+
+En la Tabla \@ref(tab:table6) se presentan los resultados del modelo multinivel para el puntaje en la prueba de francés con el género, repitencia y cantidad de hermanos como covariables centrados a su media grupal (CWC). Los resultados sugieren que el efecto _within_ de la repitencia es negativo y estadísticamente significativo ($\beta$ = -1.08, $p$ < 0.001). En detalle, dentro de las clases los estudiantes que han repetido curso obtienen, en promedio, 1.08 puntos menos en la prueba de francés en comparación con quienes no han repetido, controlando por las demás variables (con estudiantes del mismo género y número de hermanos). Esta relación estadísticamente significativa con un 99,9% de confianza. Sustantivamente, este efecto da cuenta de las diferencias individuales de la repitencia en el puntaje de francés _dentro_ de las clases. Esto también se debe a que un centrado CWC permite obtener un efecto "puro" de la relación entre dos variables de nivel individual, como es el caso [@enders_centering_2007]. Por otro lado, el intercepto del modelo es positivo pero no estadísticamente significativo ($\beta$ = 0.02, $p$ > 0.05). Este  coeficiente indica el promedio del puntaje en la prueba de francés para cada clase cuando la proporción de casos para género, repitencia y hermanos es igual que la de la media grupal.
+
+
+
+```{r table6, echo=FALSE, results='asis'}
+
+ccoef <- list(
+  "(Intercept)" = "Intercepto",
+  fille_cwc = "Mujer CWC (Ref.= Hombre)",
+  rdblt2_cwc = "Repitencia CWC (Ref.= No repitencia)",
+  frat_cwc = "Más de un hermano CWC (Ref.= Un hermano o menos)")
+
+
+texreg::texreg(list(model_5),
+               custom.model.names = c("Modelo 5"),
+               caption = paste("(\\#tab:table6)","Modelo multinivel para puntaje en prueba de francés, género, repitencia del curso y cantidad de hermanos"),
+               stars = c(0.05, 0.01, 0.001),
+               custom.coef.map = ccoef,
+               custom.note = "\\item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. %stars \\\\ \\item Fuente: Elaboración propia en base a datos de Bressoux 2017",
+               threeparttable = T,
+               leading.zero = T,
+               float.pos = "h!",
+               use.packages = F,
+               booktabs = TRUE,
+               scalebox = 0.9)
+
+
+```
+
+
+b) Los investigadores sostienen que el efecto del género sobre el rendimiento en francés depende de la composición de género del curso. Para evaluar esta hipótesis estime dos modelos: i) primero, uno que le permita obtener el efecto within y contextual del género, controlando por repitencia y hermanos. ii) Luego, agregue a i) una interacción entre los efectos within y contextual del género. Compare el ajuste de ambos modelos utilizando criterios estadísticos y concluya que modelo ajusta mejor a los datos (5 puntos).
+
+
+```{r m67, include=FALSE}
+
+db %<>% 
+  mutate(fille_mean = mean(fille, na.rm = T),
+         fille_cgm = fille - fille_mean,
+         rdblt2_mean = mean(rdblt2, na.rm = T),
+         rdblt2_cgm = rdblt2 - rdblt2_mean,
+         frat_mean = mean(frat, na.rm = T),
+         frat_cgm = frat - frat_mean)
+
+db %<>% 
+  group_by(classe2) %>% 
+  mutate(cm_fille = mean(fille, na.rm = T))
+
+model_6 <- lmer(fran4 ~ fille_cgm + rdblt2_cgm + frat_cgm + cm_fille + (1|classe2), 
+                data = db,
+                REML = T)
+
+model_7 <- lmer(fran4 ~ fille_cgm + rdblt2_cgm + frat_cgm + cm_fille + 
+                  fille_cgm*cm_fille + (fille_cgm + 1|classe2), 
+                data = db,
+                REML = T)
+```
+
+
+En la Tabla \@ref(tab:table7) se muestran los resultados de los modelos multinivel para el puntaje en la prueba de francés según el efecto within y contextual del género, controlando por la repitencia y número de hermanos. Los resultados del modelo 6 sugieren que el efecto within del género centrado a su gran media es positivo y estadísticamente significativo ($\beta$ = 0.41, $p$ < 0.05), sin embargo, en el modelo 7 este coeficiente voltea su signo a negativo y deja de ser estadísticamente significativo ($\beta$ = -0.28, $p$ > 0.05). Por su parte, el efecto contextual del género es negativo pero no estadísticamente signiticativo en ambos modelos. Ahora bien, en el modelo 7 se incluye una interacción entre el efecto within y contextual del género, siendo positivo ($\beta$ = 1.46) y estadísticamente significativo al 95% de confianza. 
+
+
+```{r table7, echo=FALSE, results='asis'}
+
+ccoef <- list(
+  "(Intercept)" = "Intercepto",
+  fille_cgm = "Mujer CGM (Ref.= Hombre)",
+  rdblt2_cgm = "Repitencia CGM (Ref.= No repitencia)",
+  frat_cgm = "Más de un hermano CGM (Ref.= Menos de un hermano)",
+  cm_fille = "Mujer CM (Ref.= Hombre)",
+  "fille_cgm:cm_fille" = "Mujer CGM x Mujer CM")
+
+texreg::texreg(list(model_6, model_7),
+               custom.model.names = c("Modelo 6", "Modelo 7"),
+               caption = paste("(\\#tab:table7)","Modelos multinivel para puntaje en prueba de francés según efectos within y contextuales del género"),
+               stars = c(0.05, 0.01, 0.001),
+               custom.coef.map = ccoef,
+               custom.note = "\\item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. %stars \\\\ \\item Fuente: Elaboración propia en base a datos de Bressoux 2017",
+               threeparttable = T,
+               leading.zero = T,
+               float.pos = "H",
+               use.packages = F,
+               booktabs = TRUE,
+               scalebox = 0.9)
+
+
+```
+
+En la Tabla \@ref(tab:table8) se reportan los estadísticos del análisis de devianza (likelihood ratio test) para el contraste entre el Modelo 6 y 7. La prueba de razón de verosimilitud se utiliza para comparar modelos anidados y determinar cuál se ajusta mejor a los datos [@peugh_practical_2010]. 
+
+La hipótesis nula para esta prueba es que el efecto de la interacción entre el efecto within y contextual del género es igual a cero, mientras que la hipótesis alternativa sostiene que el efecto de la interacción es distinto de cero. Formalmente, las hipótesis son:
+
+$$
+H_0 : \beta_{1j} = 0
+$$
+$$
+H_A : \beta_{1j} \neq 0
+$$
+
+Los resultados del análisis muestran que la prueba de razón de verosimilitud no es estadísticamente significativa, $\chi^2$ (3) = 5.19, $p$ = 0.2. Esto indica que el Modelo 7, que incluye la interacción entre el efecto within y contextual del género, no ajusta significativamente mejor a los datos que el Modelo 6, que no considera esta interacción. Además, el Modelo 6 presenta valores menores de AIC y BIC en comparación con el Modelo 7, lo que refuerza la idea de un mejor ajuste [@hox_multilevel_2017a]. Con todo, los resultados sugieren que es no posible rechazar la $H_0$, por lo que es preferible restringuir la interacción. 
+
+
+```{r table8, echo=FALSE, results='asis'}
+
+res_fit1 <- anova(model_6, model_7)
+
+fit_tab <- res_fit1[c(2,3,5,6,7,8)] %>% as_tibble(.)
+
+fit_tab$mod <- c("Modelo 6", "Modelo 7")
+
+fit_tab$p <- if_else(fit_tab$`Pr(>Chisq)` < 0.05, "p < 0.05 *", "p > 0.05")
+
+fit_tab$Chisq <- round(fit_tab$Chisq, digits = 2)
+
+fit_tab <- fit_tab %>% 
+  dplyr::select(mod, AIC, BIC, deviance, Chisq, Df, p)
+
+colnames <- c("Modelo", "AIC", "BIC", "Deviance", "X2", "Df", "p-value")
+
+fit_tab <- kableExtra::kable(fit_tab, 
+                             format = "latex", 
+                             col.names = colnames,
+                             row.names = F,
+                             booktabs = T, 
+                             caption = paste("(\\#tab:table8)","Estadísticos de bondad de ajuste"),) %>% 
+  kableExtra::kable_styling(latex_options = "hold_position", 
+                            position = "center") %>%
+  kableExtra::kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F) %>% 
+  kableExtra::column_spec(1, width = "2cm") %>%
+  kableExtra::row_spec(0, bold = T)
+
+fit_tab
+```
+
+
+c) Interprete sustantivamente la interacción estimada. Puede apoyarse en cálculos y/o herramientas gráficas (repórtelas).¿Qué nos dicen los datos respecto de la hipótesis sostenida por los investigadores? (7 puntos).
+
+
+Los resultados del Modelo 7 de la Tabla \@ref(tab:table7), sugieren que el efecto de la interacción entre el efecto within y contextual del género sobre el puntaje en la prueba de francés es positivo y estadísticamente significativo ($\beta$ = 1.46, $p$ < 0.05). Esto se respalda en la Figura \@ref(fig:fig2) que muestra los efectos marginales de esta interacción. Como se aprecia, la pendiente es positiva y estadísticamente significativa cuando el efecto contextual toma valores superiores a 0.35, lo cual indica que el efecto within varía en función de la composición de género en la clase. Es decir, a medida que aumenta la proporción de mujeres en la clase (efecto contextual mayor), el efecto within de ser mujer sobre el puntaje en la prueba de francés se incrementa.
+
+
+```{r fig2, echo=FALSE, fig.cap='Efecto marginal del efecto within del género moderado por su efecto contextual', fig.align='center', out.width='80%'}
+
+plot_slopes(model_7, 
+            variables = "fille_cgm", 
+            condition = "cm_fille",
+            conf_level = .95,
+            re.form = NA) +
+  geom_hline(yintercept = 0, 
+             color = "red", 
+             linetype = "dashed") +
+  labs(y = "Efecto marginal del efecto within del género",
+       x = "Efecto contextual del género",
+       caption = "Fuente: Elaboración propia en base a datos de Bressoux 2017",
+       title = NULL)
+
+```
+
+
+Sustantivamente, estos resultados indican que, en una clase donde no hay diferencias significativas entre los cursos en términos de la composición de género (efecto _contextual_ = 0), las mujeres obtienen, en promedio, 0.07 puntos más que los hombres en la prueba de francés. Sin embargo, conforme aumenta la proporción de mujeres en los cursos (con mayor efecto _contextual_), las mujeres logran, en promedio, un puntaje de aproximadamente 0.8 puntos más alto que los hombres cuando el efecto _contextual_ alcanza valores cercanos a 0.727. Este resultado ilustra que el efecto de ser mujer _(within)_ no es constante, sino que se amplifica a medida que la representación femenina en la clase es mayor.
+
+Alrededor de un efecto _contextual_ de 0.35, el intervalo de confianza para el efecto marginal del género cruza el cero, lo que indica que a partir de ese punto, el efecto _within_ se vuelve estadísticamente significativo. Esto sugiere que el contexto de género en la clase modera el efecto individual de ser mujer sobre el puntaje en la prueba de francés, volviéndose más fuerte y positivo conforme crece la proporción de mujeres en la clase.
+
+Con todo, la hipótesis de los investigadores recibe apoyo: el efecto del género depende de la composición de género de la clase. Específicamente, el efecto positivo de ser mujer en el rendimiento en la prueba de francés aumenta a medida que la clase está compuesta mayoritariamente por mujeres
+
+
+# Referencias
+
+::: {#refs}
+:::
+
+\pagebreak
+
+# Código de R
+
+```{r ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+
+```
+
