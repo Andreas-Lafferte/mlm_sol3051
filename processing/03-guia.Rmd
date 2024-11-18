@@ -1,0 +1,704 @@
+---
+title: |
+ | \vspace{5cm} Guía N°3
+subtitle: |
+ Análisis de Datos Multinivel - SOL3051
+date: "`r Sys.setlocale('LC_TIME', 'es_ES.UTF-8'); format(Sys.Date(), '%A %d, %B %Y')`"
+author: |
+ |  Estudiante [Andreas Laffert](mailto:alaffertt@estudiante.uc.cl)
+ |  Profesora Camila Ortiz
+ | Ayudante Andrés González
+ | \vspace{8cm}
+output:
+  bookdown::pdf_document2:
+    template: null
+    toc: false
+    keep_tex: true
+    number_sections: false
+bibliography: ../input/bib/magister.bib     
+csl: ../input/bib/apa6.csl    
+linkcolor: DarkSlateBlue
+urlcolor: DarkSlateBlue
+linestretch: '1.15'
+link-citations: yes
+fontsize: 12pt
+papersize: a4
+geometry: "left=2.54cm,right=2.54cm,top=2.54cm,bottom=2.54cm"
+lang: en
+fig-height: 4
+fig-width: 7.5
+header-includes:
+  - \usepackage{titling}
+  - \pretitle{\begin{center}\LARGE\includegraphics[width=7cm]{../img/logo_isuc.png}\\[\bigskipamount]}
+  - \posttitle{\end{center}}
+  - \usepackage{times}           
+  - \usepackage{caption}
+  - \usepackage{floatrow} 
+  - \usepackage{float}
+  - \floatsetup[figure]{capposition=top}
+  - \floatsetup[table]{capposition=top}
+  - \floatplacement{figure}{H}
+  - \floatplacement{table}{h}
+  - \usepackage{graphicx}
+  - \usepackage{booktabs}
+  - \usepackage{longtable}
+  - \usepackage{array}
+  - \usepackage{multirow}
+  - \usepackage{wrapfig}
+  - \usepackage{colortbl}
+  - \usepackage{pdflscape}
+  - \usepackage{tabu}
+  - \usepackage{fancyhdr}
+  - \fancyhead{} 
+  - \usepackage{threeparttable}
+editor_options: 
+  chunk_output_type: console
+---
+
+\pagebreak
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F,
+                      warning = F,
+                      error = F, 
+                      message = F) 
+```
+
+
+
+```{r paquetes, include=FALSE}
+if (! require("pacman")) install.packages("pacman")
+
+pacman::p_load(tidyverse, 
+               magrittr,
+               sjmisc, 
+               sjPlot, 
+               lme4, 
+               easystats, 
+               influence.ME, 
+               broom.mixed, 
+               here,
+               marginaleffects,
+               ggeffects,
+               texreg, 
+               ggdist,
+               misty,
+               kableExtra,
+               cowplot,
+               patchwork)
+
+options(scipen=999)
+rm(list = ls())
+```
+
+
+
+```{r funciones, include=FALSE}
+
+miles <- function(x) {
+  format(round(as.numeric(x),0), big.mark = ".")
+}
+
+decimales <- function(x) {
+  format(round(as.numeric(x), 2), decimal.mark = ",")
+}
+
+# set theme
+
+theme_set(theme_ggdist())
+
+options(knitr.kable.NA = "")
+options(knitr.table.format="latex")
+
+```
+
+```{r datos, include=FALSE}
+load(file = here("input/data/issp_merge.RData")) %>% 
+  sjlabelled::remove_all_labels()
+
+names(issp_merge)
+glimpse(issp_merge)
+```
+
+```{r procesamiento, include=FALSE}
+
+# seleccionar ----
+
+db <- issp_merge %>% 
+  dplyr::select(caseid, countryR, year, ID.issp, region, concern, merit, inequality, employed, student, retired, age, socestat, educ.prim, educ.second, educ.terc, female, Giniall) %>% 
+  janitor::clean_names() %>% 
+  as_tibble() %>% 
+  sjlabelled::remove_all_labels()
+ 
+# filtrar: no ----- 
+
+# recodificar y transformar: luego ----
+
+db %>% 
+  select(concern, inequality, merit) %>%
+  sjmisc::descr(.)
+
+db$year <- as.numeric(db$year)
+
+db <- db %>% 
+  rename(country_wave = id_issp,
+         country = country_r,
+         wave = year)
+
+# casos perdidos -----
+
+colSums(is.na(db))
+
+#db <- na.omit(db)
+
+```
+
+
+# Enunciado 1
+
+Analice la estructura de los datos y evalúe cual es la mejor forma de anidamiento para modelar la preocupación por la desigualdad (concern), tomando en consideración a los encuestados, encuestas, países y años. Desarrolle los cálculos y/o tests que considere necesarios. Reporte sus resultados, interprételos y concluya (4 puntos)
+
+```{r null_model, echo=FALSE, include=FALSE}
+
+mA <- lmer(concern ~ 1 + (1 | country_wave), data = db)
+mB <- lmer(concern ~ 1 + (1 | country), data = db)
+mC <- lmer(concern ~ 1 + (1 | country_wave) + (1 | wave), data = db)
+mD <- lmer(concern ~ 1 + (1 | country_wave) + (1 | country), data = db)
+mE <- lmer(concern ~ 1 + (1 | country) + (1 | wave), data = db)
+mF <- lmer(concern ~ 1 + (1 | country_wave) + (1 | country) +
+             (1 | wave), data = db) 
+
+```
+
+
+
+En vista de que la base de datos posee una estructura de encuestas longitudinales comparativas, este trabajo sigue las recomendaciones de Schmidt-Catran y Fairbrother [-@schmidt-catranRandomEffectsMultilevel2016] para definir la estructura de efectos aleatorios en el modelado de la preocupación por la desigualdad. De acuerdo con los autores, el aumento de las encuestas comparativas entre países en los últimos años ha abierto una posibilidad para la investigación comparada de estimar el efecto no solo aquellas características transversales de los países (ej. las estructuras institucionales), sino también de aquellas que varían en el tiempo dentro de los países (ej. el desempleo). En el caso de estudios longitudinales comparativos, los autores recomiendan incluir efectos aleatorios en todos aquellos niveles donde se incorporen efectos fijos, ya que omitir alguno de estos efectos en cualquier nivel jerárquico puede resultar en errores estándar subestimados y grados de libertad inflados artificialmente, lo que trae por consecuencia una mayor posibilidad de cometer error tipo I [@schmidt-catranRandomEffectsMultilevel2016, p.24]. 
+
+
+
+
+```{r table1, results='asis'}
+
+ccoef <- list(
+  "(Intercept)" = "Intercepto")
+
+texreg::texreg(list(mA,mB,mC,mD,mE,mF),
+               custom.model.names = c("Modelo (A)",
+                                      "Modelo (B)",
+                                      "Modelo (C)",
+                                      "Modelo (D)",
+                                      "Modelo (E)",
+                                      "Modelo (F)"),
+               caption = paste("(\\#tab:table1)","Modelos multinivel nulos para preocupación por la desigualdad con diferentes estructuras de efectos aleatorios"),
+               stars = c(0.05, 0.01, 0.001),
+               custom.coef.map = ccoef,
+               custom.note = "\\item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. %stars. Modelo (A) = Country-Year, Modelo (B) = Country, Modelo (C) = Year/Country-Year, Modelo (D) = Country/Country-Year, Modelo (E) = Country/Year, Modelo (F) = Country/Year/Country-Year \\\\ \\item Fuente: Elaboración propia en base a datos de Mijs (2019).",
+               threeparttable = T,
+               leading.zero = T,
+               float.pos = "h!",
+               use.packages = F,
+               booktabs = T,
+               scalebox = 0.8)
+
+```
+
+Como sugieren Schmidt-Catran & Fairbrother [-@schmidt-catranRandomEffectsMultilevel2016], las principales omisiones en datos de encuestas longitudinales ocurren a nivel de los países y de los países-años o encuestas. Ante esto, proponen y analizan distintas estructuras de anidamiento y de efectos aleatorios en base a combinaciones de individuos, países-años, países y años. En la Tabla \@ref(tab:table1) se muestran cinco modelos con diferentes estructuras de efectos aleatorios para modelar la preocupación por la desigualdad, mientras que en la Tabla \@ref(tab:table2) se muestran las correlaciones intraclase para los modelos D y F.
+
+
+```{r table2, results='asis'}
+tab_icc <- bind_rows(                                                 
+performance::icc(mA, by_group = T) %>% 
+  as_tibble() %>% 
+  mutate(Model = "Modelo (A) Country-Year"),
+performance::icc(mB, by_group = T) %>% 
+  as_tibble() %>% 
+  mutate(Model =  "Modelo (B) Country"),
+performance::icc(mC, by_group = T) %>% 
+  as_tibble() %>% 
+  mutate(Model = "Modelo (C) Year/Country-Year"),
+performance::icc(mD, by_group = T) %>% 
+  as_tibble() %>% 
+  mutate(Model = "Modelo (D) Country/Country-Year"),
+performance::icc(mE, by_group = T) %>% 
+  as_tibble() %>% 
+  mutate(Model = "Modelo (E) Country/Year"),
+performance::icc(mF, by_group = T) %>% 
+  as_tibble() %>% 
+  mutate(Model = "Modelo (F) Country/Year/Country-Year"),
+) %>% 
+  select(Model, Group, ICC) %>% 
+  mutate(ICC = round(ICC, 3)) 
+
+tab_icc %>% 
+  filter(str_detect(Model, "D|F")) %>% 
+  kableExtra::kable(format = "latex", 
+                    col.names = c("Modelo", "Unidad", "ICC"),
+                    row.names = F,
+                    booktabs = T, align = 'l',
+                    caption = paste("(\\#tab:table2)","Comparación de correlación intraclase para preocupación por la desigualdad entre diferentes estructuras de efectos aleatorios")) %>% 
+  kableExtra::kable_styling(latex_options = "hold_position", 
+                            position = "center") %>%
+  kableExtra::kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F) %>% 
+  kableExtra::column_spec(1, width = "8cm") %>%
+  kableExtra::row_spec(0, bold = T) %>% 
+  kableExtra::add_footnote(label = "Fuente: Elaboración propia en base a datos de Mijs (2019).", notation = "none")
+  
+ 
+
+
+```
+
+Los resultados sugieren que los modelos D y F son los que mejor ajuste presentan en base a los indicadores del BIC y el AIC, considerando la complejidad de la estructura de datos que incluye variabilidad a nivel de país y país-año. Los resultados de la Tabla \@ref(tab:table2) indican que en el modelo D se aprecia que la proporción de la varianza de la preocupación por la desigualdad que se asocia a nivel país es de 8,7% y a nivel país-año es de 4,7%, mientras que en el modelo F estas son 9,9% y 3,6% respectivamente, además de que la ICC para año es de 0,7%. En ambos casos se observa que existe parte de la varianza de la preocupación por la desigualdad que no es atribuible únicamente a los países, sino que también al país-año. Ahora bien, la correlación intraclase a nivel año en el modelo F no es mayor al 1%, lo que sugiere que hay muy poca varianza de la preocupación por la desigualdad a este nivel y, por ende, pone en duda su inclusión como nivel de anidación. 
+
+```{r table3, results='asis'}
+res_fit1 <- anova(mF, mD)
+
+fit_tab <- res_fit1[c(2,3,5,6,7,8)] %>% as_tibble(.)
+
+fit_tab$mod <- c("Modelo D", "Modelo F")
+
+fit_tab$p <- if_else(fit_tab$`Pr(>Chisq)` < 0.05, "p < 0.05 *", "p > 0.05")
+
+fit_tab$Chisq <- round(fit_tab$Chisq, digits = 2)
+
+fit_tab <- fit_tab %>% 
+  dplyr::select(mod, AIC, BIC, deviance, Chisq, Df, p)
+
+colnames <- c("Modelo", "AIC", "BIC", "Deviance", "X2", "Df", "p-value")
+
+fit_tab <- kableExtra::kable(fit_tab, 
+                             format = "latex", 
+                             col.names = colnames,
+                             row.names = F,
+                             booktabs = T, 
+                             caption = paste("(\\#tab:table3)","Estadísticos de bondad de ajuste entre Modelo D y Modelo F")) %>% 
+  kableExtra::kable_styling(latex_options = "hold_position", 
+                            position = "center") %>%
+  kableExtra::kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F) %>% 
+  kableExtra::column_spec(1, width = "2cm") %>%
+  kableExtra::row_spec(0, bold = T) %>% 
+  kableExtra::add_footnote(label = c("Fuente: Elaboración propia en base a datos de Mijs (2019)."), notation = "none")
+
+fit_tab
+```
+
+Para determinar el modelo óptimo, se realizó un test de devianza entre los modelos D y F mostrado en la Tabla \@ref(tab:table3), revelando que el modelo F, aunque más complejo, no mejora sustancialmente el ajuste (X2=0.18, p>0.05). De este modo, en este trabajo los individuos encuestados en las diferentes olas son anidados tanto en países como en años (1987/1999/2009). Esto implica que el diseño multinivel de esta investigación distingue tres niveles: *individuos* = nivel 1; *año-país* = nivel 2; y *país* = nivel 3. En detalle, en estos modelos cada encuestado/individuo (nivel 1) es observado en un país específico y en un momento específico (nivel 2), y cada año-país es una única observación de un país (nivel 3) que se observa repetidas veces [@fairbrotherTwoMultilevelModeling2014].
+
+
+# Enunciado 2
+
+Estime un modelo (m1) para predecir la preocupación por la desigualdad económica, anidando en encuestas y países. Estime la influencia de la percepción de desigualdad (inequality) sobre la variable dependiente, incorporando el efecto _within_ de nivel 1, _between_ nivel 2 y _between_ nivel 3 de esta variable. Luego, estime un segundo modelo (m2), en donde reemplace los efectos _between_ por efectos _contextuales._ Incluya como covariables de nivel 1: ser estudiante (referencia resto de categorías ocupacionales), la edad, educación terciaria (referencia restantes categorías), sexo y estatus social subjetivo.
+
+```{r centering, echo=FALSE, include=FALSE}
+
+db %<>% 
+  group_by(country_wave) %>%
+  mutate(cm_inequality_country_wave = mean(inequality, na.rm = T)) %>% 
+  ungroup() 
+
+db %<>% 
+  group_by(country) %>%
+  mutate(cm_inequality_country = mean(inequality, na.rm = T)) %>% 
+  ungroup()
+
+db$inequality_cwc1 <- db$inequality - db$cm_inequality_country_wave
+db$inequality_cwc2 <- db$cm_inequality_country_wave - db$cm_inequality_country
+
+db %<>% 
+  mutate(gm_student = mean(student, na.rm = T),
+         gm_age = mean(age, na.rm = T),
+         gm_educ_terc = mean(educ_terc, na.rm = T),
+         gm_female = mean(female, na.rm = T),
+         gm_socestat = mean(socestat, na.rm = T),
+         student_cgm = student - gm_student,
+         age_cgm = age - gm_age,
+         educ_terc_cgm = educ_terc - gm_educ_terc,
+         female_cgm = female - gm_female,
+         socestat_cgm = socestat - gm_socestat)
+
+db %<>% 
+  mutate(gm_inequality = mean(inequality, na.rm = T),
+         inequality_cgm1 = inequality - gm_inequality,
+         inequality_cgm2 = cm_inequality_country_wave - gm_inequality)
+
+
+db %<>% 
+  group_by(country) %>%
+  mutate(cm_gini_country = mean(giniall, na.rm = T)) %>% 
+  ungroup()
+
+db %<>% 
+  mutate(gm_gini = mean(giniall, na.rm = T),
+         gini_cgm2 = giniall - cm_gini_country)
+
+```
+
+
+
+```{r modelos, echo=FALSE, include=FALSE}
+
+m1 <- lmer(concern ~ 1 + inequality_cwc1 + inequality_cwc2 + cm_inequality_country + student_cgm + age_cgm + educ_terc_cgm + female_cgm + socestat_cgm + (1 | country_wave) + (1 | country), data = db)
+
+m2 <- lmer(concern ~ 1 + inequality_cgm1 + inequality_cgm2 + cm_inequality_country + student_cgm + age_cgm + educ_terc_cgm + female_cgm + socestat_cgm + (1 | country_wave) + (1 | country), data = db)
+
+m3 <- lmer(concern ~ 1 + inequality_cgm1 + student_cgm + age_cgm + educ_terc_cgm + female_cgm + socestat_cgm + gini_cgm2 + cm_gini_country + (1 | country_wave) + (1 | country), data = db)
+
+```
+
+
+
+a) Reporte sus resultados en una tabla en formato académico (2 ptos)
+
+```{r table4, results='asis'}
+
+ccoef <- list(
+  "(Intercept)" = "Intercepto",
+  inequality_cwc1  = "Percepción de desigualdad (\\textit{within})",
+  inequality_cwc2 = "Percepción de desigualdad (\\textit{between-survey})",
+  cm_inequality_country = "Percepción de desigualdad (\\textit{between-country/contextual-country})",
+  student_cgm = "Estudiante (\\textit{cgm})",
+  age_cgm = "Edad (\\textit{cgm})",
+  educ_terc_cgm = "Educación terciaria (\\textit{cgm})",
+  female_cgm = "Mujer (\\textit{cgm})",
+  socestat_cgm = "Estatus social subjetivo (\\textit{cgm})",
+  inequality_cgm1 = "Percepción de desigualdad (\\textit{within})",
+  inequality_cgm2 = "Percepción de desigualdad (\\textit{contextual-survey})"
+ )
+
+texreg::texreg(list(m1, m2),
+               custom.model.names = c("Modelo 1", "Modelo 2"),
+               caption = paste("(\\#tab:table4)","Modelos multinivel para preocupación por la desigualdad según covariables"),
+               stars = c(0.05, 0.01, 0.001),
+               custom.coef.map = ccoef,
+               custom.note = "\\item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. %stars \\\\ \\item Fuente: Elaboración propia en base a datos de Mijs (2019)",
+               threeparttable = T,
+               leading.zero = T,
+               float.pos = "H",
+               use.packages = F,
+               booktabs = TRUE,
+               scalebox = 0.8)
+
+```
+
+
+
+b) Calcule e interprete la varianza explicada por el modelo 1 (4 ptos)
+
+```{r var_explicada, echo=FALSE, include=FALSE}
+
+varianzas_N <- as.data.frame(VarCorr(mD))
+varianzas_N
+var_N_n1 <- varianzas_N$vcov[3]
+var_N_n2 <- varianzas_N$vcov[1]
+var_N_n3 <- varianzas_N$vcov[2]
+
+icc_pais_ano <- var_N_n2 /(var_N_n1 + var_N_n2 + var_N_n3)
+icc_pais_ano
+icc_pais <- var_N_n3 /(var_N_n1 + var_N_n2 + var_N_n3)
+icc_pais
+var_N_n1 /(var_N_n1 + var_N_n2 + var_N_n3)
+
+varianzas_C <- as.data.frame(VarCorr(m1))
+var_C_n1 <- varianzas_C$vcov[3]; var_C_n1
+var_C_n2 <- varianzas_C$vcov[1]; var_C_n2
+var_C_n3 <- varianzas_C$vcov[2]; var_C_n3
+
+#Varianza explicada n1
+r2_n1 <- (var_N_n1 - var_C_n1)/var_N_n1
+r2_n1
+
+#Varianza explicada n2
+r2_n2 <- (var_N_n2 - var_C_n2)/var_N_n2
+r2_n2
+
+#Varianza explicada n3
+r2_n3 <- (var_N_n3 - var_C_n3)/var_N_n3
+r2_n3
+
+```
+
+
+En las Tablas \@ref(tab:table1) y \@ref(tab:table4) se muestran las varianzas a cada nivel para el modelo nulo y el modelo 1, respectivamente[^1]. De acuerdo con los resultados, las varianzas explicadas del modelo 1 a nivel individual, año-país y país son las siguientes:
+
+
+- Varianza explicada N1 (individuos): 
+
+$$
+R^2_1 = \frac{\sigma^2_{\epsilon}\mid\text{NULO} - \sigma^2_{\epsilon}\mid\text{COMPLETO}}{\sigma^2_{\epsilon}\mid\text{NULO}} = \frac{524.2155- 507.2944}{524.2155} =  0.03227886
+$$
+
+
+
+- Varianza explicada N2 (año-país): 
+
+$$ 
+R^2_2 = \frac{\sigma^2_{\mu_0}\mid\text{NULO} - \sigma^2_{\mu_0}\mid\text{COMPLETO}}{\sigma^2_{\mu_0}\mid\text{NULO}} = \frac{28.19734-29.64419}{28.19734} =  -0.05131184
+$$
+
+
+- Varianza explicada N3 (país):
+
+$$ 
+R^2_3 = \frac{\sigma^2_{\lambda_0}\mid\text{NULO} - \sigma^2_{\lambda_0}\mid\text{COMPLETO}}{\sigma^2_{\lambda_0}\mid\text{NULO}} = \frac{52.85169-23.87496}{52.85169} =  0.548265
+$$
+
+Los resultados sugieren que el modelo 1 logra explicar cierta parte de la varianza de la preocupación por la desigualdad a nivel individual y de año-país, mientras que a nivel de los países logra explicar buena parte de su varianza. A nivel individual, los predictores de percepción de desigualdad, ser estudiante, el sexo, la edad, contar con eduación superior y el estatus social subjetivo logran, en conjunto, explicar un 3,2% de la varianza de la preocupación por la desigualdad. A nivel año-país o de encuestas, el modelo 1 captura un -5,1% de la varianza de la preocupación por la desigualdad que es atribuible a las diferenciras entre encuestas (nivel 2). El signo negativo de la varianza explicada puede asociarse a una alta colinealidad entre predictores de nivel 2 y 3, lo que puede conducir a que el modelo  redistribuya la varianza atribuible al nivel 2 hacia el nivel 3 o incluso hacia los residuales, afectando la estimación de la varianza en el nivel 2. Finalmente, a nivel de países el modelo 1 logra explicar un 54,8% de la varianza de la preocupación por la desigualdad a este nivel, lo que indica que el predictor contextual de percepción de la desigualdad captura gran parte de la preocupación por la misma a nivel individual. 
+
+
+[^1]: El calculo manual vía código de la varianza explicada se encuentra en el anexo del documento. 
+
+c) Grafique los interceptos aleatorios estimados en el modelo 1 e interprete sus hallazgos (4 ptos).
+
+
+En la Figura \@ref(fig:fig1) se muestran los interceptos aleatorios del Modelo 1 a nivel de año-país (country_wave). Los resultados indican que, en su mayoría, los interceptos de los diferentes años-países no parecen desviarse significativamente de la gran media ($\gamma_{000}$). Sin embargo, algunos años-países presentan valores notablemente superiores a la media, como Francia 2009 (+9.54), Bulgaria 1992 (+7.35) y Hungría 2009 (+6.87), lo que sugiere una mayor preocupación por la desigualdad en estos contextos. En contraste, países como Filipinas 2009 (-12.00), Suecia 1992 (-6.85) y Estados Unidos 1987 (-6.70) se asocian con una preocupación significativamente menor por la desigualdad. 
+
+
+```{r fig1, echo=FALSE, fig.cap='Interceptos aleatorios para Country-Wave del Modelo 1', fig.align='center', out.width='100%', fig.asp=0.8}
+
+graphs_m1 <- sjPlot::plot_model(m1, 
+                   type = "re", 
+                   vline.color = "green",
+                   grid = F, 
+                   sort.est = "sort.all", 
+                   ci.lvl = .95, 
+                   colors = "#800080")
+
+graphs_m1[[1]] +
+  labs(title = NULL,
+       y = "Intercepto",
+       caption = "Fuente: Elaboración propia en base a datos de Mijs 2019")+
+  theme_ggdist()
+
+```
+
+
+En la Figura \@ref(fig:fig2) se muestran los interceptos aleatorios del Modelo 1 a nivel de países (country). Similarmente a lo que ocurre a nivel de año-país, los resultados indican que, en su mayoría, los interceptos de los diferentes países no parecen desviarse significativamente de la gran media ($\gamma_{000}$). Unicamente Francia presenta valores superiores a la gran media que indican una mayor preocupación por la desigualdad (+7.68), mientras que Filipinas (-9.67) y Estados Unidos (-5.31) muestran valores menores a la gran media que se asocian con una preocupación significativamente menor por la desigualdad.
+
+
+```{r fig2, echo=FALSE, fig.cap='Interceptos aleatorios para Country del Modelo 1', fig.align='center', out.width='100%'}
+
+graphs_m1[[2]] +
+  labs(title = NULL,
+       y = "Intercepto",
+       caption = "Fuente: Elaboración propia en base a datos de Mijs 2019")+
+  theme_ggdist()
+
+```
+
+d) Interprete el efecto within de la percepción de desigualdad estructural sobre la preocupación por la misma (4 ptos).
+
+Los resultados del Modelo 1 (Tabla \@ref(tab:table4)) sugieren que el efecto _within_ de la percepción de la desigualdad es positivo y estadísticamente significativo ($\beta$ = 0.07, $p$ < 0.001). Esto implica que, ceteris paribus, por cada unidad que un individuo aumenta en percepción de desigualdad respecto al promedio de su grupo (año-país), su preocupación por la desigualdad aumenta en 0.07 puntos en promedio. Dado que este predictor está centrado a la media grupal (CWC) a nivel de año-país (nivel 2), el coeficiente captura exclusivamente la variación dentro de cada año-país, eliminando la influencia de las diferencias promedio entre años-países o países (nivel 3). Esto significa que, para individuos dentro de un mismo año-país, aquellos que perciben una desigualdad mayor al promedio de su grupo también tienden a mostrar una mayor preocupación por la desigualdad.
+
+
+e) Compare e interprete los efectos between y contextual de la percepción de desigualdad a nivel 2, correspondientes a los modelos 1 y 2 (6 ptos).
+
+Los resultados del Modelo 1 (Tabla \@ref(tab:table4)) sugieren que el efecto _between-surveys_ de la percepción de la desigualdad es positivo, pero no estadísticamente significativo ($\beta$ = 0.66, $p$ > 0.05). Este efecto refleja cómo las diferencias promedio en la percepción de la desigualdad a nivel de año-país están asociadas con la preocupación por la desigualdad a nivel individual. En detalle, esto indica que, controlando por las demás variables, por cada unidad de aumento en el promedio de percepción de desigualdad dentro de un año-país, la preocupación promedio por la desigualdad aumenta en 0.66 puntos a nivel individual. Sin embargo, esta relación no es estadísticamente significativa.  Este predictor captura la variabilidad _between-surveys_, es decir, las diferencias promedio en la percepción de desigualdad entre los diferentes años-países.
+
+Por su parte, los resultados del Modelo 2 muestran que el efecto _contextual-survey_ de la percepción de desigualdad es positivo ($\beta$ = 0.58) pero no estadísticamente significativo ($p$ > 0.05). Este efecto representa la asociación entre el promedio de percepción de desigualdad a nivel de año-país (centrado a la gran media, CGM) y la preocupación individual por la desigualdad, controlando por la percepción de desigualdad a nivel individual. Es decir, ceteris paribus, un aumento de una unidad en el promedio de percepción de desigualdad a nivel de año-país/encuesta se asocia con un incremento promedio de 0.58 puntos en la escala de preocupación por la desigualdad, aunque esta relación no es estadísticamente significativa. Este efecto contextual captura cómo las diferencias en la percepción de desigualdad promedio entre años-países o encuestas están asociadas con la preocupación individual, considerando que las variaciones dentro de cada grupo están ya modeladas por el efecto _within_ Sin embargo, la falta de significancia estadística indica que esta relación no es robusta en este modelo.
+
+Con todo, ninguno de los efectos _between_ o _contextual_ de la percepción de desigualdad a nivel de año-país/encuestas es estadísticamente significativo. Esto sugiere que las diferencias promedio en percepción de desigualdad entre años-países, ya sea como efecto _between_ o _contextual_, no influyen de manera relevante en la preocupación individual por la desigualdad, controlando o no controlando por la percepción de desigualdad a nivel individual. 
+
+
+f) Compare e interprete los efectos between y contextual de la percepción de desigualdad estructural a nivel 3, correspondientes a los modelos 1 y 2 (6 ptos).
+
+Los resultados del Modelo 1 (Tabla \@ref(tab:table4)) sugieren que el efecto _between-country_ de la percepción de la desigualdad es positivo, pero no estadísticamente significativo ($\beta$ = 0.51, $p$ < 0.01). Este coeficiente indica que, en promedio, por cada unidad adicional en la percepción de desigualdad promedio de un país, la preocupación individual por la desigualdad aumenta en 0.51 puntos promedio. Este efecto captura exclusivamente las diferencias _entre_ países, sin controlar por variaciones dentro de los años-país o por predictores individuales. Por lo tanto, refleja cómo los contextos nacionales de percepción de desigualdad estructural están asociados con niveles más altos de preocupación por la desigualdad a nivel individual.
+
+
+En cuanto al efecto _contextual-country_ de la percepción de desigualdad, los resultados del Modelo 2 sugieren que es negativo pero no estadísticamente significativo ($\beta$ = -0.14, $p$ > 0.05). Este efecto, representado por la media de percepción de desigualdad a nivel país (centrada a la gran media, CGM), captura cómo las diferencias promedio entre países influyen en la preocupación individual por la desigualdad, controlando por las variaciones dentro de los años-país y a nivel individual (ambas centradas CGM). Así, este coeficiente indica que, controlando por la percepción de desigualdad a nivel individual y año-país, un aumento de una unidad en el promedio de percepción de desigualdad de los países se asocia con una disminución de 0.14 puntos en la escala de preocupación por la desigualdad, aunque esta relación no es estadísticamente significativa.
+
+
+Estos resultados permiten argumentar que las diferencias _entre_ países en la percepción de desigualdad (promedio) es relevante para explicar la preocupación por la desigualdad a nivel individual, sin controlar por variaciones a nivel año-país e individual. Sin embargo, el efecto _contextual_ de la percepción de desigualdad (promedio) de los países no es relevante para explicar la preocupación por la deisgualdad, ya que cuando se controla por el mismo predictor a nivel individual y de año-país, el efecto a nivel país no es estadísticamente significativo. Con todo, esto sugiere que las diferencias en la preocupación por la desigualdad se asocian en mayor medida a diferencias _entre_ países antes que a su efecto _contextual_. 
+
+
+
+# Enunciado 3
+
+Estime un nuevo modelo (m3) utilizando la misma estructura de anidamiento. De la forma más parsimoniosa posible obtenga el efecto within de nivel 1 de la percepción de desigualdad, más las covariables mencionadas en la pregunta anterior. A continuación agregue los términos necesarios para obtener el efecto within-países y contextual-países del índice de Gini (Giniall).
+
+a) Reporte sus resultados en una tabla en formato académico (presente efectos al 90%, 95% y 99% de confianza) (2 ptos)
+
+
+```{r table5, results='asis'}
+
+ccoef <- list(
+  "(Intercept)" = "Intercepto",
+  inequality_cgm1 = "Percepción de desigualdad (\\textit{within})",
+  student_cgm = "Estudiante (\\textit{CGM})",
+  age_cgm = "Edad (\\textit{CGM})",
+  educ_terc_cgm = "Educación terciaria (\\textit{CGM})",
+  female_cgm = "Mujer (\\textit{CGM})",
+  socestat_cgm = "Estatus social subjetivo (\\textit{CGM})",
+  gini_cgm2 = "Desigualdad económica (\\textit{within country})",
+  cm_gini_country = "Desigualdad económica (\\textit{contextual country})"
+ )
+
+texreg::texreg(list(m3),
+               custom.model.names = c("Modelo 3"),
+               caption = paste("(\\#tab:table5)","Modelo multinivel para preocupación por la desigualdad según percepción de desigualdad, ser estudiante, edad, educación terciaria, sexo, estatus social subjetivo y desigualdad económica del país"),
+               stars = c(0.1, 0.05, 0.01),
+               custom.coef.map = ccoef,
+               custom.note = "\\item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. %stars \\\\ \\item Fuente: Elaboración propia en base a datos de Mijs (2019)",
+               threeparttable = T,
+               leading.zero = T,
+               float.pos = "H",
+               use.packages = F,
+               booktabs = TRUE,
+               scalebox = 0.8)
+
+```
+
+b) Compare e interprete sustantivamente los efectos within-países y contextual-países del índice de Gini y (10 ptos).
+
+En la Tabla \@ref(tab:table5) se muestra el modelo multinivel estimado para predecir la preocupación por la desigualdad incorporando la desigualdad económica medida con el Índice de Gini. Los resultados de este modelo sugieren que el efecto _within-country_ de la desigualdad económica es positivo y  estadísticamente significativo ($\beta$ = 0.70, $p$ < 0.1). En detalle, este coeficiente indica que, en promedio, un aumento de una unidad en la desigualdad económica de un mismo país en el tiempo (entre encuestas), se asocia con un incremento de 0.70 puntos en la escala de preocupación por la desigualdad, siendo esta relación estadísticamente significativa al 90% de confianza. Este efecto captura las diferencias _dentro_ de los países en diferentes años-países o encuestas, cuando el promedio de la desigualdad económica aumenta en una unidad. Sustantivamente, este resultado sugiere que el aumento en el nivel de desigualdad económica _dentro_ de los países en el tiempo (encuestas/olas) influye positivamente en la preocupación por la desigualdad a nivel individual.
+
+Por su parte, los resultados del Modelo 3 sugieren que el efecto _contextual-country_ de la desigualdad económica es positivo (casi nulo) pero no estadísticamente significativo ($\beta$ = 0.00, $p$ > 0.1). Especificamente, este coeficiente indica que por cada unidad adicional en el nivel de desigualdad en un país _dentro_ del mismo a lo largo del tiempo, la preocupación por la desigualdad aumenta en 0 puntos promedio, controlando por el nivel de desigualdad económica a nivel año-país. Sin embargo, este efecto no es estadísticamente significativo. Este predictor captura el efecto _contextual_ del país, ya que se encuentra controlado por el mismo predictor a nivel año-país o encuesta. 
+
+
+Los resultados apuntan a un hallazgo interesante: más que el efecto _contextual_ de la desigualdad económica del país, es su cambio _dentro_ de los países lo que explica en mayor medida la preocupación por la desigualdad a nivel individual. Dado que el efecto contextual de la desigualdad económica no es estadísticamente significativo, no es posible sostener que la "tradición" de desigualdad de un país tenga un impacto en la preocupación por la misma. Al contrario, el efecto _within_ países de la desigualdad económica sí se asocia con un incremento de la misma por parte de los individuos. Con todo, estos resultados resaltan la importancia de los cambios del nivel de desigualdad económica dentro de los países antes que su tendencia estructural para abordar la preocupación individual de la desigualdad. 
+
+
+c) Estime un modelo (m4) que le permita evaluar la siguiente hipótesis: _El efecto de la percepción de desigualdad sobre la preocupación por la misma, es moderada por el nivel objetivo de desigualdad del país en el largo plazo (promedio en el período)_. Reporte sus resultados y represéntelos gráficamente. Interprete sustantivamente (10 ptos).
+
+
+En la Tabla \@ref(tab:table6) se muestra el modelo multinivel estimado para predecir la preocupación por la desigualdad incorporando la interacción entre la percepción de desigualdad y la desigualdad económica de los países. Los resultados sugieren que, cuando el nivel de desigualdad económica de los países _(contextual-country)_ aumenta en un porciento, el efecto _within_ de la percepción de la desigualdad es de 0,13 puntos promedios sobre la preocupación por la misma. 
+
+
+
+```{r table6, results='asis'}
+
+m4 <- lmer(concern ~ 1 + inequality_cgm1 + student_cgm + age_cgm + educ_terc_cgm + female_cgm + socestat_cgm + gini_cgm2 + inequality_cgm1*cm_gini_country + wave + (1 | country_wave) + (1 + inequality_cgm1 | country), data = db)
+
+
+ccoef <- list(
+  "(Intercept)" = "Intercepto",
+  inequality_cgm1 = "Percepción de desigualdad (\\textit{within})",
+  student_cgm = "Estudiante (\\textit{CGM})",
+  age_cgm = "Edad (\\textit{CGM})",
+  educ_terc_cgm = "Educación terciaria (\\textit{CGM})",
+  female_cgm = "Mujer (\\textit{CGM})",
+  socestat_cgm = "Estatus social subjetivo (\\textit{CGM})",
+  gini_cgm2 = "Desigualdad económica (\\textit{within country})",
+  cm_gini_country = "Desigualdad económica (\\textit{contextual country})",
+  "inequality_cgm1:cm_gini_country" = "Percepción de desigualdad (\\textit{within}) X Desigualdad económica (\\textit{contextual country})",
+  wave = "Ola"
+ )
+
+texreg::texreg(list(m4),
+               custom.model.names = c("Modelo 4"),
+               caption = paste("(\\#tab:table6)","Modelo multinivel para preocupación por la desigualdad según percepción de desigualdad, desigualdad económica del periodo del país y covariables"),
+               stars = c(0.1, 0.05, 0.01),
+               custom.coef.map = ccoef,
+               custom.note = "\\item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. %stars \\\\ \\item Fuente: Elaboración propia en base a datos de Mijs (2019)",
+               threeparttable = T,
+               leading.zero = T,
+               float.pos = "H",
+               use.packages = F,
+               booktabs = TRUE,
+               scalebox = 0.8)
+
+```
+
+
+En la Figura \@ref(fig:fig3) se visualiza el efecto marginal de la percepción de desigualdad _within_, moderada por el efecto _contextual-country_ del nivel de desigualdad económica. Los resultados indican que el efecto _within_ de la percepción de la desigualdad es positivo y estadísticamente significativo a medida que el nivel de desigualdad económica del país en el largo plazo o tradicionalmente oscila entre los valores 0 y 42. Sin embargo, a valores más extremos de desigualdad económica (superiores a 42 aprox.), el efecto _within_ de la percepción de la desigualdad deja de ser estadísticamente significativo. Sustantivamente, este resultado arroja hallazgos importantes, puesto que sugiere que la percepción de desigualdad a nivel individual afecta a la percepción de la misma cuando los países sostienen menores niveles de desigualdad económica en promedio. Por el otro lado, en países con mayores niveles de desigualdad, el efecto individual "puro" de la percepción subjetiva de la desigualdad no se asocia significativamente con la preocupación de la misma. Con todo, esto puede sugerir que el peso estructural de mayores niveles objetivo de desigualdad económica tiende a moderar o anular el efecto individual de la percepción subjetiva de la desigualdad, mientras que este efecto es mayor cuando la desigualdad económica de los países es menor.  
+
+
+
+```{r fig3, echo=FALSE, fig.cap='Efecto marginal del efecto within de percepción de desigualdad moderado por el efecto contextual de desigualdad económica del país', fig.align='center', out.width='80%'}
+
+plot_slopes(m4, 
+            variables = "inequality_cgm1", 
+            condition = "cm_gini_country",
+            conf_level = .95,
+            re.form = NA) +
+  geom_hline(yintercept = 0, 
+             color = "red", 
+             linetype = "dashed") +
+  labs(y = "Efecto marginal de percepción de desigualdad (within)",
+       x = "Promedio de desigualdad económica del país",
+       caption = "Fuente: Elaboración propia en base a datos de Mijs (2019)",
+       title = NULL)
+
+```
+
+
+d) Tomando como referencia el modelo 3 evalúe si existen observaciones influyentes. Reporte sus análisis y concluya (8 ptos).
+
+
+```{r, echo=FALSE}
+inf_m3 <- influence(m3, group = "country")
+
+# D cook
+#cooks.distance(inf_m3, parameters = 1, sort = T) # cut point is 4/26 = 0.1212121
+
+cut_point <- 4/length(unique(db$country))
+```
+
+
+En la Figura \@ref(fig:fig4) se muestra la distancia de Cook para observaciones influyentes en el Modelo 3. Se optó por utilizar la prueba de distancia de Cook con el fin de obtener una evaluación general que resume la influencia de las observaciones (países) sobre el total de parámetros en el modelo. El punto de corte es `r cut_point`, considerando que existen 26 países en la base de datos. 
+
+Los resultados sugieren que existe una buena cantidad de países que apalancan el Modelo 3. En total, los países que pasan el punto de corte (marcados por triangulos rojos), alcazan los 12 de un total de 26, es decir, casi la mitad de los países. El país que más se aleja del punto de corte es Dinamarca, seguido por Sudafrica y Suecia.  
+
+```{r fig4, echo=FALSE, fig.cap='Distancia de Cook para observaciones influyentes en el Modelo 3', fig.align='center', out.width='90%'}
+
+inf_m3 <- influence(m3, group = "country")
+
+# D cook
+#cooks.distance(inf_m3, parameters = 1, sort = T) # cut point is 4/26 = 0.1212121
+
+cut_point <- 4/length(unique(db$country))
+
+plot(inf_m3, which="cook",
+     cutoff=cut_point, sort=TRUE,
+     xlab="Distancia de Cook",
+     ylab="País",width=60, height=40)
+
+```
+
+Para determinar si la exclusión de alguna de estas observaciones influyentes afectan la signifancia estadística de los parámetros fijos estimados en el Modelo 3, se condujo una prueba de cambios de significancia estadística (ver Tabla \@ref(tab:table7)). De acuerdo con los resultados de esta prueba, no existe evidencia que los países cambien la significancia estadística de los parámetros estimados en el Modelo 3. En definitiva, estos resultados permiten sostener que no es necesario remover ningún país y que las estimaciones del Modelo 3 se mantienen robustas. 
+
+```{r table7, results='asis'}
+
+lista <- sigtest(inf_m3, test = -1.96) %>% as.list()
+
+tabla <- lista %>%
+  imap_dfr(~ as.data.frame(.x) %>%
+             mutate(Variable = .y, Country = rownames(.x))) %>%
+  select(Country, Variable, everything())
+
+tabla %>% 
+  select(Country,  Variable, Changed.Sig) %>% 
+  pivot_wider(id_cols = Country,
+              names_from = Variable,
+              values_from = Changed.Sig) %>% 
+  kableExtra::kable(format = "latex", 
+                    col.names = c("País", "Intercepto", "Percepción desigualdad (within)", "Estudiante (cgm)", "Edad (cgm)", "Educ. Terciaria (cgm)", "Mujer (cgm)", "ESS (cgm)", "Gini (within-country)", "Gini (contextual-country)"),
+                    row.names = F,
+                    booktabs = T, 
+                    caption = paste("(\\#tab:table7)","Estadísticos de cambio de significancia estadística para el Modelo 3")) %>% 
+  kableExtra::kable_styling(latex_options = "HOLD_position", 
+                            position = "center") %>%
+  kableExtra::kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = T, font_size = 10) %>% 
+  kableExtra::column_spec(1, width = "2cm") %>%
+  kableExtra::row_spec(0, bold = T) %>% 
+  kableExtra::add_footnote(label = c("Fuente: Elaboración propia en base a datos de Mijs (2019)."), notation = "none")
+
+```
+
+
+\pagebreak
+
+# Referencias
+
+::: {#refs}
+:::
+
+\pagebreak
+
+# Código de R
+
+```{r ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+
+```
+
+
