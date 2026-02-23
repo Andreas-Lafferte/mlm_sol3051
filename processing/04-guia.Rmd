@@ -1,0 +1,629 @@
+---
+title: |
+ | \vspace{5cm} Guía N°4
+subtitle: |
+ Análisis de Datos Multinivel - SOL3051
+date: "`r Sys.setlocale('LC_TIME', 'es_ES.UTF-8'); format(Sys.Date(), '%A %d, %B %Y')`"
+author: |
+ |  Profesora Camila Ortiz
+ | Ayudante Andrés González
+ | \vspace{8cm}
+ |  Estudiante [Andreas Laffert](mailto:alaffertt@estudiante.uc.cl)
+output:
+  bookdown::pdf_document2:
+    template: null
+    toc: false
+    keep_tex: true
+    number_sections: false
+bibliography: ../input/bib/magister.bib     
+csl: ../input/bib/apa6.csl    
+linkcolor: DarkSlateBlue
+urlcolor: DarkSlateBlue
+linestretch: '1.15'
+link-citations: yes
+fontsize: 12pt
+papersize: a4
+geometry: "left=2.54cm,right=2.54cm,top=2.54cm,bottom=2.54cm"
+lang: en
+fig-height: 4
+fig-width: 7.5
+header-includes:
+  - \usepackage{titling}
+  - \pretitle{\begin{center}\LARGE\includegraphics[width=7cm]{../img/logo_isuc.png}\\[\bigskipamount]}
+  - \posttitle{\end{center}}
+  - \usepackage{times}           
+  - \usepackage{caption}
+  - \usepackage{floatrow} 
+  - \usepackage{float}
+  - \floatsetup[figure]{capposition=top}
+  - \floatsetup[table]{capposition=top}
+  - \floatplacement{figure}{H}
+  - \floatplacement{table}{h}
+  - \usepackage{graphicx}
+  - \usepackage{booktabs}
+  - \usepackage{longtable}
+  - \usepackage{array}
+  - \usepackage{multirow}
+  - \usepackage{wrapfig}
+  - \usepackage{colortbl}
+  - \usepackage{pdflscape}
+  - \usepackage{tabu}
+  - \usepackage{fancyhdr}
+  - \fancyhead{} 
+  - \usepackage{threeparttable}
+editor_options: 
+  chunk_output_type: console
+---
+
+\pagebreak
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F,
+                      warning = F,
+                      error = F, 
+                      message = F) 
+```
+
+
+
+```{r paquetes, include=FALSE}
+if (! require("pacman")) install.packages("pacman")
+
+pacman::p_load(tidyverse, 
+               magrittr,
+               sjmisc, 
+               sjPlot, 
+               lme4, 
+               easystats, 
+               influence.ME, 
+               broom.mixed, 
+               here,
+               marginaleffects,
+               ggeffects,
+               texreg, 
+               ggdist,
+               misty,
+               kableExtra,
+               naniar,
+               ggalluvial, 
+               shadowtext,
+               MetBrewer)
+
+options(scipen=999)
+rm(list = ls())
+```
+
+
+
+```{r funciones, include=FALSE}
+
+miles <- function(x) {
+  format(round(as.numeric(x),0), big.mark = ".")
+}
+
+decimales <- function(x) {
+  format(round(as.numeric(x), 2), decimal.mark = ",")
+}
+
+# set theme
+
+theme_set(theme_ggdist())
+
+options(knitr.kable.NA = "")
+options(knitr.table.format="latex")
+
+```
+
+```{r datos, include=FALSE}
+load(file = here("input/data/Elsoc_2016_2022.RData")) %>% 
+  sjlabelled::remove_all_labels()
+
+elsoc <- elw
+rm(elw)
+names(elsoc)
+glimpse(elsoc)
+```
+
+
+
+# Enunciado 1
+
+Como primer paso, elimine los casos perdidos de la base de datos. Luego, estime un modelo multinivel sin predictores que le permita descomponer la varianza de la probabilidad de justificar la violencia hacia Carabineros. Calcule la correlación intraclase e interprete sus resultados (4 puntos).
+
+Para la eliminación de los casos perdidos, primero se transforma la base de datos ELSOC 2016-2022 que viene en formato "wide" a "long" a partir del subfijo de la ola respectiva. Luego, se analiza la distribución de los valores perdidos en cada variable (ver Figura \@ref(fig:fig1)). Por último, se aplica un procedimiento listwise (eliminación por filas) de tratamiento de casos perdidos, dejando solo aquellos casos con información completa en  todas las varibles. 
+
+Implementación en R:
+
+```{r procesamiento, echo=TRUE, collapse=TRUE}
+
+# seleccionar ----
+
+db <- elsoc %>% 
+  dplyr::select(-c(version, muestra, comuna_w01)) %>% 
+  janitor::clean_names() %>% 
+  as_tibble() 
+ 
+# filtrar: no ----- 
+
+# recodificar y transformar: luego ----
+
+db_long <- db %>% 
+  pivot_longer(
+    cols = matches("_w\\d{2}$"), 
+    names_to = c(".value", "wave"), 
+    names_pattern = "(.*)_w(\\d{2})") %>% 
+  mutate(ola = as.numeric(wave)) %>% 
+  select(-wave)
+
+# casos perdidos -----
+
+prop_miss(db_long[c(7:18)])*100
+
+#miss_var_summary(db_long)
+
+g1 <- vis_miss(db_long) + theme(axis.text.x = element_text(angle=80))
+
+db_long <- na.omit(db_long)
+
+```
+
+
+
+```{r fig1, echo=FALSE, fig.cap='Proporción de casos perdiso por variable', fig.align='center', out.width='100%', fig.asp=0.8}
+g1
+```
+
+Luego de la eliminación de casos perdidos, la muestra final se compone de `r dim(db_long)[1]` observaciones anidadas en 1245 encuestados. 
+
+
+```{r, echo=FALSE, include=FALSE}
+m0 <- glmer(piedras_carab_f ~ 1 + (1 | idencuesta), 
+                data = db_long, family = binomial(link = "logit"),
+            nAGQ = 5)
+
+performance::icc(m0, by_group = T)
+vars0 <- as.data.frame(VarCorr(m0))
+vars0
+var_between <- vars0$vcov[1]
+
+ICC <- var_between / (var_between + ((pi^2)/3))
+ICC
+```
+
+
+```{r table1, results='asis'}
+
+ccoef <- list(
+  "(Intercept)" = "Intercepto")
+
+texreg::texreg(list(m0),
+               custom.model.names = c("Modelo 0"),
+               caption = paste("(\\#tab:table1)","Modelo multinivel sin predictores para la justificación de violencia hacia Carabineros"),
+               stars = c(0.05, 0.01, 0.001),
+               custom.coef.map = ccoef,
+               custom.note = "\\item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. %stars. \\\\ \\item Fuente: elaboración propia con datos agrupados de ELSOC 2016-2022 (n = 4.868)",
+               threeparttable = T,
+               leading.zero = T,
+               float.pos = "h!",
+               use.packages = F,
+               booktabs = T,
+               scalebox = 1)
+
+```
+
+En la Tabla \@ref(tab:table1) se muestran los resultados del modelo multinivel logístico sin predictores para la justificación de la violencia hacia Carabineros, que descompone la varianza de esta variable a nivel de observaciones/mediciones e individuos. Siguiendo a  Hox et al. [-@hox_multilevel_2017a p. 117], la correlación intraclase (ICC) para este modelo multinivel logístico es la siguiente:
+
+$$ICC = \frac{\sigma^2_{\mu_0}}{\sigma^2_{\mu_0} + \pi^2/3} = \frac{1.83}{1.83+3.29} = 0.358$$
+
+Los resultados sugieren que la ICC del modelo nulo es de 0.36, lo cual representa la cantidad de varianza de la justificación de la violencia hacia Carabineros que puede atribuirse a la estructura de agrupación en la población, en este caso, individuos. Esto significa que un 36% de la varianza de la justificación de la violencia contra Carabineros se asocia a diferencias entre individuos, mientras que un 64% de su varianza corresponde al cambio en el tiempo en los mismos individuos. Con todo, existe una proporción considerable de la variabilidad de la justificación de la violencia hacia Carabineros que se debe a diferencias o caractecterísticas propias de los individuos.
+
+
+
+# Enunciado 2
+
+Describa los principales patrones de evolución de la Justificación de la violencia hacia Carabineros a nivel individual. Interprete sus resultados (4 puntos)
+
+La Figura \@ref(fig:fig2) ilustra las frecuencias anuales en la justificación de la violencia hacia Carabineros entre 2016 y 2022. Cada año representa frecuencias porcentuales de la justificación (o no), y los flujos entre ellos reflejan el cambio de opiniones dentro de los mismos sujetos de un año al siguiente, dado que estamos utilizando de datos de panel. Así, por ejemplo, del 87% que no justificaba la violencia contra Carabineros en 2018, aproximadamente un 74% mantuvo la misma respuesta en 2019, mientras que un 13% cambió su opinión hacia sí justificar la violencia contra Carabineros. En general, la gran mayoría de los encuestados -entre el 70 y el 90%- no justifica la violencia hacia Carabineros en todo el periodo. A pesar de esta tendencia general, se observan pequeñas variaciones en los años 2019 y 2020-21, en donde aumenta la cantidad de personas que afirman justificar este tipo de violencia para luego retornar a bajos niveles en el 2022. Estos cambios se asocian principalmente al periodo de crisis social y política en el contexto del  Estallido Social y la Pandemia por Covid-19 y posterior. 
+
+```{r fig2, echo=FALSE, fig.cap='Cambios en la justificación de violencia hacia Carabineros en el tiempo (2016-2022)', fig.align='center', out.width='100%', fig.asp=0.8}
+
+datos.viocab <- db_long %>% 
+  group_by(idencuesta, ola) %>% 
+  count(piedras_carab_f) %>% 
+  group_by(ola) %>% 
+  mutate(porcentaje=n/sum(n)) %>% 
+  ungroup() %>% 
+  na.omit() %>% 
+  mutate(piedras_carab_f = if_else(piedras_carab_f == 0, "No justifica", "Justifica"),
+         piedras_carab_f = factor(piedras_carab_f, levels = c("No justifica", "Justifica")),
+         ola = case_when(ola == 1 ~ "2016",
+                         ola == 2 ~ "2017",
+                         ola == 3 ~ "2018",
+                         ola == 4 ~ "2019",
+                         ola == 5 ~ "2021",
+                         ola == 6 ~ "2022"),
+         ola = factor(ola, levels = c("2016",
+                                      "2017",
+                                      "2018",
+                                      "2019",
+                                      "2021",
+                                      "2022")))
+etiquetas.viocab <- db_long %>%
+  group_by(ola, piedras_carab_f) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  group_by(ola) %>%
+  mutate(porcentaje = count / sum(count)) %>% 
+  na.omit() %>% 
+  mutate(idencuesta = 1,
+         piedras_carab_f = if_else(piedras_carab_f == 0, "No justifica", "Justifica"),
+         piedras_carab_f = factor(piedras_carab_f, levels = c("No justifica", "Justifica")),
+         ola = case_when(ola == 1 ~ "2016",
+                         ola == 2 ~ "2017",
+                         ola == 3 ~ "2018",
+                         ola == 4 ~ "2019",
+                         ola == 5 ~ "2021",
+                         ola == 6 ~ "2022"),
+         ola = factor(ola, levels = c("2016",
+                                      "2017",
+                                      "2018",
+                                      "2019",
+                                      "2021",
+                                      "2022")))
+
+
+
+datos.viocab %>% 
+  ggplot(aes(x = ola, fill = piedras_carab_f, stratum = piedras_carab_f,
+             alluvium = idencuesta, y = porcentaje)) +
+  ggalluvial::geom_flow(alpha = .4) + 
+  ggalluvial::geom_stratum(linetype = 0) +
+  scale_y_continuous(labels = scales::percent) + 
+  scale_fill_manual(values = c("#aba8fa", "#c71558")) +
+  geom_shadowtext(data = etiquetas.viocab, 
+                  aes(label = ifelse(porcentaje > 0 , scales::percent(porcentaje, accuracy = .1),"")),
+                  position = position_stack(vjust = .5),
+                  show.legend = FALSE,
+                  size = 4,
+                  color = rep('white'),
+                  bg.colour='grey30')+
+  labs(y = "Porcentaje",
+       x = "Ola",
+       fill = "Justificación violencia hacia Carabineros",
+    caption = "Fuente: elaboración propia con datos agrupados de ELSOC 2016-2022 (n = 4.868)") +
+  theme(legend.position = "bottom")
+```
+
+
+
+# Enunciado 3
+
+Realice los análisis necesarios para estimar cómo la satisfacción con la democracia influye en la justificación de la violencia hacia la policía. Para ello:
+
+i. Estime el efecto within y contextual de la satisfacción con la democracia, controlando por la edad, el sexo, y el nivel educacional (cree una dummy que identifique a quienes tienen Ed. media o más, dejé el resto como referencia), la ideología, valoración de movimientos de izquierda y preferencias autoritarias.
+
+
+```{r}
+
+db_long %<>% 
+  mutate(educ_f = if_else(educ_f %in% c("Ed. Basica o menos", "Ed. Media Inc"), 0, 1)) 
+
+#Gran media
+db_long$gm_satisdemo <- mean(db_long$satisdemo, use="complete.obs")
+db_long$gm_izqder <- mean(db_long$izqder, use="complete.obs")
+db_long$gm_mov_izq <- mean(db_long$mov_izq, use="complete.obs")
+db_long$gm_mandfuerte <- mean(db_long$mandfuerte, use="complete.obs")
+
+#Centrado en la gran media
+db_long$satisdemo_cgm <- db_long$satisdemo - db_long$gm_satisdemo
+db_long$izqder_cgm <- db_long$izqder - db_long$gm_izqder 
+db_long$mov_izq_cgm <- db_long$mov_izq - db_long$gm_mov_izq 
+db_long$mandfuerte_cgm <- db_long$mandfuerte - db_long$gm_mandfuerte 
+
+# Contextual 
+db_long %<>% 
+  group_by(idencuesta) %>% 
+  mutate(cm_satisdemo = mean(satisdemo, use="complete.obs")) %>% 
+  ungroup()
+
+db_long %<>% 
+  group_by(idencuesta) %>% 
+  mutate(cm_izqder = mean(izqder, use="complete.obs")) %>% 
+  ungroup()
+
+db_long %<>% 
+  mutate(
+    ola_f = case_when(ola == 1 ~ "2016",
+                      ola == 2 ~ "2017",
+                      ola == 3 ~ "2018",
+                      ola == 4 ~ "2019",
+                      ola == 5 ~ "2021",
+                      ola == 6 ~ "2022"),
+    ola_f = factor(ola_f, levels = c("2016",
+                                     "2017",
+                                     "2018",
+                                     "2019",
+                                     "2021",
+                                     "2022")))
+
+
+m1 <- glmer(piedras_carab_f ~ 1 + satisdemo_cgm + cm_satisdemo +
+            edad + hombre + educ_f + izqder_cgm + 
+            mov_izq_cgm + mandfuerte_cgm + (1 | idencuesta), 
+            data = db_long, family = binomial(link = "logit"))
+
+m2 <- glmer(piedras_carab_f ~ 1 + satisdemo_cgm + cm_satisdemo +
+            edad + hombre + educ_f + cm_izqder + 
+            mov_izq_cgm + mandfuerte_cgm + satisdemo_cgm*cm_izqder +
+            (1 + satisdemo_cgm| idencuesta), 
+            data = db_long, family = binomial(link = "logit"))
+
+m3 <- glmer(piedras_carab_f ~ 1 + satisdemo_cgm + cm_satisdemo +
+            edad + hombre + educ_f + cm_izqder + 
+            mov_izq_cgm + mandfuerte_cgm + satisdemo_cgm*cm_izqder + ola_f +
+            (1 + satisdemo_cgm | idencuesta), 
+            data = db_long, family = binomial(link = "logit"))
+
+
+
+```
+
+
+ii. Tomando como base el modelo anterior, estime si el efecto within de la satisfacción con la democracia es moderado por la tendencia ideológica promedio de los individuos.
+
+iii. Tomando como base el modelo estimado en ii), agregue efectos fijos para cada Ola de realización de la encuesta.
+
+a) Reporte sus resultados en una tabla (5 ptos)
+
+
+
+```{r table2, results='asis'}
+
+ccoef <- list(
+  "(Intercept)" = "Intercepto",
+  satisdemo_cgm = "Satisfacción con la democracia (\\textit{within})",
+  cm_satisdemo = "Satisfacción con la democracia (\\textit{contextual})",
+  edad = "Edad",
+  hombre = "Hombre (Ref.= Mujer)",
+  educ_f = "Educación media completa o más (Ref.= Ed. media incompleta o menos)",
+  izqder_cgm = "Ideología política (\\textit{within})",
+  mov_izq_cgm = "Valoración MS de izquierda (\\textit{cgm})",
+  mandfuerte_cgm = "Preferencia liderzagos autoritarios (\\textit{cgm})",
+  cm_izqder = "Ideología política (\\textit{contextual})",
+  "satisdemo_cgm:cm_izqder" = "Satisfacción con la democracia (\\textit{within}) x Ideología política (\\textit{contextual})",
+  ola_f2017 = "2017",
+  ola_f2018 = "2018",
+  ola_f2019 = "2019",
+  ola_f2021 = "2021",
+  ola_f2022 = "2022"
+  )
+
+texreg::texreg(list(m1, m2, m3),
+               custom.model.names = c("Modelo 1", "Modelo 2", "Modelo 3"),
+               caption = paste("(\\#tab:table2)","Modelos multinivel para la justificación de violencia hacia Carabineros"),
+               stars = c(0.05, 0.01, 0.001),
+               custom.coef.map = ccoef,
+               groups = list("Ola (Ref.= 2016)" = 11:15),
+               custom.note = "\\item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. %stars. \\\\ \\item Fuente: elaboración propia con datos agrupados de ELSOC 2016-2022 (n = 4.868)",
+               threeparttable = T,
+               leading.zero = T,
+               float.pos = "h!",
+               use.packages = F,
+               booktabs = T,
+               scalebox = 0.8)
+
+```
+
+
+b) Interprete el efecto within de la satisfacción con la democracia en el modelo 1(5 ptos)
+
+En la Tabla \@ref(tab:table2) se presentan los resultados de los modelos multinivel estimados para la justificación de la violencia hacia Carabineros. Según el Modelo 1, el efecto _within_ de la satisfacción con la democracia es negativo y estadísticamente significativo ($\beta$ = -0.17, $p$ < 0.01). Este efecto, estimado mediante un predictor centrado a la gran media, refleja cómo las variaciones intraindividuales en la satisfacción con la democracia a lo largo del tiempo se asocian con cambios en la justificación de la violencia hacia Carabineros. En detalle, un aumento de una unidad en la satisfacción con la democracia reduce las log-odds de justificar la violencia contra Carabineros en 0.17 unidades, manteniendo constantes las demás variables del modelo. Esta relación es estadísticamente significativa a un 99% de confianza. Al exponenciar este coeficiente, se obtiene una razón de probabilidad (odds ratio) de $e^{-0.18} \approx 0.84$, lo que indica que un aumento de una unidad en la satisfacción con la democracia reduce las chanches promedio de justificar la violencia en un 16%.
+
+c) Interprete el efecto del sexo y la edad en el modelo 2 (6 ptos)
+
+En el Modelo 2, el efecto del sexo (hombre) sobre la justificación de la violencia hacia Carabineros es positivo pero no estadísticamente significativo ($\beta$ = 0.20, $p$ > 0.05). Esto indica que, en promedio, ser hombre aumenta las log-odds de justificar la violencia hacia Carabineros en 0.23 unidades en comparación con las mujeres, manteniendo constantes las demás variables del modelo. Sin embargo, esta relación no es estadísticamente significativa con un 95% de confianza. Al exponenciar este coeficiente, se obtiene una razón de odds (odds ratio) de $e^{0.20} \approx 1.22$, lo que significa que, en promedio, las chances de justificar la violencia contra Carabineros aumentan en un 22% para los hombres en comparación con las mujeres. 
+
+Por su parte, el efecto de la edad es negativo y estadísticamente significativo ($\beta$ = -0.03, $p$ < 0.001). Esto implica que, por cada año adicional de edad, las log-odds de justificar la violencia hacia Carabineros disminuyen en 0.03 unidades, manteniendo constantes las demás variables. La razón de odds correspondiente es $e^{-0.03} \approx 0.97$, lo que sugiere que, por cada año adicional, las chances de justificar la violencia disminuyen en un 3% en promedio, reflejando una asociación consistente entre mayor edad y menor probabilidad de justificar la violencia hacia Carabineros.
+
+d) En base al modelo 2, interprete estadística y sustantivamente el efecto within de la satisfacción por la vida moderado por la ideología. Grafique sus resultados (8 puntos)
+
+El coeficiente de interacción entre la satisfacción con la democracia y la ideología política es positivo y estadísticamente significativo ($\beta$ = 0.08, $p$ < 0.01), lo que indica que el efecto _within_ de la satisfacción con la democracia sobre la justificación de la violencia hacia Carabineros varía dependiendo del nivel promedio de ideología política del individuo _(contextual)_. Específicamente, ceteris paribus, el impacto negativo de las variaciones intraindividuales en la satisfacción con la democracia sobre la justificación de la violencia es menos pronunciado en individuos con ideologías más de derecha. En términos de odds ratio, un aumento de una unidad en la ideología contextual incrementa las odds asociadas a la interacción en aproximadamente un 8% ($e^{0.08} \approx 1.08$). 
+
+Sustantivamente, esto sugiere que para aquellos individuos con ideologías más conservadoras o de derecha, la relación entre la satisfacción con la democracia y la justificación de la violencia hacia Carabineros se debilita, lo que implica que los efectos de la satisfacción con la democracia son más moderados o cercanos a cero en comparación con aquellos con ideologías más a la izquierda. Para estos últimos (es decir, cuando el promedio de ideología es cercano a cero), el efecto marginal _within_ de la satisfacción con la democracia es negativo y estadísticamente significativo. Esto sugiere que para las personas más de izquierda un incremento en la satisfacción con la democracia interindividual reduce las chances de justificar este tipo de violencia.
+
+
+
+```{r fig3, echo=FALSE, fig.cap='Efecto marginal del efecto within de satisfacción con democracia moderado por el efecto contextual la ideología', fig.align='center', out.width='80%'}
+
+plot_slopes(m2, 
+            variables = "satisdemo_cgm", 
+            condition = "cm_izqder",
+            conf_level = .95,
+            re.form = NA) +
+  geom_hline(yintercept = 0, 
+             color = "red", 
+             linetype = "dashed") +
+  labs(y = "Efecto marginal de satisfacción con democracia (within)",
+       x = "Promedio de ideología individual",
+      caption= "Fuente: elaboración propia con datos agrupados de ELSOC 2016-2022 (n = 4.868)",
+       title = NULL)
+
+```
+
+
+En la Figura \@ref(fig:fig3) se visualiza el efecto marginal de la satisfacción con la democracia _within_, moderado por el efecto _contextual_ de la ideología política. Los resultados indican que el efecto _within_ de la satisfacción con la democracia es negativo y estadísticamente significativo para las personas con ideologías más de izquierda. Sin embargo, a medida que la ideología se orienta más hacia la derecha, el efecto de la satisfacción con la democracia disminuye y se aproxima a cero volviéndose estadísticamente no signiticativo.
+
+
+e) Interprete estadística y sustantivamente los efectos fijos de Ola, estimados en el modelo 3 (6 puntos).
+
+En el Modelo 3, los efectos fijos asociados a las categorías de Ola (con 2016 como categoría referencia) revelan cambios en la probabilidad de justificar la violencia hacia Carabineros a lo largo del tiempo, controlando por las demás variables. Los resultados indican que, en comparación con 2016:
+
+
+- No se observan diferencias estadísticamente significativas en los coeficientes de las Olas 2017, 2018 y 2022.
+
+- Las olas de 2019 ($\beta$ = 0.92, $p$ < 0.001) y 2021 ($\beta$ = 1.09, $p$ < 0.001) presentan aumentos significativos en la probabilidad de justificar la violencia contra Carabineros, con incrementos en las odds de aproximadamente un 151% y 197%, respectivamente ($e^{0.92} \approx 2.51, e^{1.05} \approx 2.97$). Esto quiere decir que, en promedio, las chances de justificar la violencia contra Carabineros se incrementaron en un 151% en el 2019 y un 197% en el 2021.
+
+
+En términos sustantivos, los resultados de los efectos fijos para las Olas sugieren que hubo variaciones relevantes en la probabilidad de justificar la violencia contra Carabineros en los años 2019 - 2021. Se observa un aumento en la justificación de este tipo de violencia en el 2019 y 2021, muy posiblemente asociado a los cambios en actitudes y evaluaciones de justicia por parte de las personas luego de la crisis social y política con el Estallido Social, en donde hubo manifestaciones violentas y diversos casos de violación de derechos humanos por parte de Carabineros. Luego, el efecto negativo del año 2022 revela que, en comparación al 2016, la probabilidad de justificar este tipo de violencia es mucho menor, lo cual puede relacionarse con el periodo posterior a la crisis social y política, al rol de Carabineros durante la Pandemia por Covid-19 y al aumento de la inseguridad ciudadana.
+
+
+f) Reestime el modelo 1 con predictores sin centrar y agregue efectos aleatorios para la variable satisfacción con la democracia a nivel 1. En base a este modelo, calcule probabilidades predichas de justificar la violencia hacia las policías, en función del grado de satisfacción con la democracia (fije el resto de los predictores en sus medias muestrales, y las variables categóricas en sus modas). Considere los efectos aleatorios en el cálculo. Para ilustrar sus resultados, grafique las probabilidades predichas para los 10 primeros individuos de la base de datos e interprete. (10 puntos)
+
+
+```{r fig4, echo=FALSE, fig.cap='Valores predichos para justificación de la violencia hacia Carabuneros según satisfacción con la democracia', fig.align='center', out.width='100%', fig.asp=0.8}
+
+m4 <- glmer(piedras_carab_f ~ 1 + satisdemo +
+            edad + hombre + educ_f + izqder + 
+            mov_izq + mandfuerte + (1 + satisdemo | idencuesta), 
+            data = db_long, family = binomial(link = "logit"))
+
+moda_hombre <- as.numeric(names(sort(table(db_long$hombre), decreasing = TRUE))[1])
+moda_educ_f <- as.numeric(names(sort(table(db_long$educ_f), decreasing = TRUE))[1])
+moda_mov_izq <- as.numeric(names(sort(table(db_long$mov_izq), decreasing = TRUE))[1])
+
+new_data <- expand.grid(
+  satisdemo = unique(db_long$satisdemo), # Variar satisdemo
+  edad = mean(db_long$edad, na.rm = T), # Media de edad
+  hombre = moda_hombre, # Moda de hombre
+  educ_f = moda_educ_f, # Moda de educ_f
+  izqder = mean(db_long$izqder, na.rm = T), # Media de izqder
+  mov_izq = moda_mov_izq, # Moda de mov_izq
+  mandfuerte = mean(db_long$mandfuerte, na.rm = T), # Media de mandfuerte
+  idencuesta = unique(db_long$idencuesta)
+)
+
+new_data$prob <- predict(m4, 
+        newdata = new_data,
+        re.form = NULL,
+        type = "response")
+
+new_data %>% 
+  filter(idencuesta %in% unique(idencuesta)[1:10]) %>% 
+  mutate(idencuesta = as.factor(idencuesta)) %>% 
+  ggplot(aes(x = satisdemo, y = prob, group = idencuesta, color = idencuesta)) +
+  geom_line(linewidth = 0.7) +
+  geom_point(size = 2) +
+  MetBrewer::scale_color_met_d(name = "Redon") +
+  labs(y = "Probabilidades predichas",
+       x = "Satisfacción con la democracia",
+       color = "ID Sujeto",
+       caption = "Fuente: elaboración propia con datos agrupados de ELSOC 2016-2022 (n = 4.868)") +
+  theme(legend.position = "bottom")
+
+
+```
+
+
+En la Figura \@ref(fig:fig4) se visualizan las probabilidades predichas de la justificación de la violencia contra Carabineros a partir de la satisfacción con la democracia para los primeros diez sujetos de la base de datos de panel. A partir de esta figura se observa que, en general, a mayor satisfacción con la democracia menores tienden a ser las probabilidades de justificar la violencia contra Carabineros, respaldando lo que se mostró en el Modelo 1. A pesar de esta tendencia general, se aprecian algunas variaciones al mirar las pendientes de cada sujeto. Así, el efecto negativo de la satisfacción con la democracia es mucho mayor en algunos sujetos y mucho menor en otros, e inclusive positivo en uno. Estas diferencias entre individuos sugieren que existen otros factores que pueden explicar la justificación de la violencia hacia Carabineros.
+
+
+
+# Enunciado 4
+
+En los medios de comunicación es habitual escuchar que la confianza política ha tendido a disminuir en los últimos años. Para analizar este tema, genere un índice (promedio) de confianza política a partir de la confianza en el congreso, partidos y gobierno. A continuación modele el índice de confianza política en función de la satisfacción con la democracia (within y contextual), controlando por sexo, edad, educación (media o superior), autoritarismo, ideología y estatus social subjetivo. Agregue un efecto lineal del tiempo. Reporte sus resultados en una tabla.
+
+
+```{r}
+
+db_long %<>% 
+  mutate(ind_conf = rowMeans(cbind(conf_congr, conf_gob, conf_part), na.rm = TRUE))
+
+db_long$gm_ess <- mean(db_long$ess, use = "complete.obs")
+db_long$ess_cgm <- db_long$ess - db_long$gm_ess
+
+m5 <- lmer(ind_conf ~ 1 + satisdemo_cgm + cm_satisdemo +
+            edad + hombre + educ_f + izqder_cgm + 
+            ess_cgm + mandfuerte_cgm + ola + (1 | idencuesta), 
+            data = db_long)
+
+m6 <- lmer(ind_conf ~ 1 + satisdemo_cgm + cm_satisdemo +
+            edad + hombre + educ_f + izqder_cgm + 
+            ess_cgm + mandfuerte_cgm + ola + 
+             satisdemo_cgm*ola + 
+             (1 + satisdemo_cgm| idencuesta), 
+            data = db_long)
+```
+
+
+```{r table3, results='asis'}
+
+ccoef <- list(
+  "(Intercept)" = "Intercepto",
+  satisdemo_cgm = "Satisfacción con la democracia (\\textit{within})",
+  cm_satisdemo = "Satisfacción con la democracia (\\textit{contextual})",
+  edad = "Edad",
+  hombre = "Hombre (Ref.= Mujer)",
+  educ_f = "Educación media completa o más (Ref.= Ed. media incompleta o menos)",
+  izqder_cgm = "Ideología política (\\textit{within})",
+  ess_cgm = "Estatus social subjetivo (\\textit{cgm})",
+  mandfuerte_cgm = "Preferencia liderzagos autoritarios (\\textit{cgm})",
+  ola = "Ola",
+  "satisdemo_cgm:ola" = "Satisfacción con la democracia (\\textit{within}) x Ola"
+  )
+
+texreg::texreg(list(m5, m6),
+               custom.model.names = c("Modelo 5", "Modelo 6"),
+               caption = paste("(\\#tab:table3)","Modelos multinivel para la confianza política"),
+               stars = c(0.05, 0.01, 0.001),
+               custom.coef.map = ccoef,
+               custom.note = "\\item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. %stars. \\\\ \\item Fuente: elaboración propia con datos agrupados de ELSOC 2016-2022 (n = 4.868)",
+               threeparttable = T,
+               leading.zero = T,
+               float.pos = "H",
+               use.packages = F,
+               booktabs = T,
+               scalebox = 0.8)
+
+```
+
+
+a) Interprete el efecto del tiempo (5 puntos)
+
+
+En la Tabla \@ref(tab:table3) se presentan los resultados de los modelos multinivel para la confianza política. Los resultados sugieren que el tiempo tiene un efecto negativo pero no estadísticamente significativo ($\beta$ = -0.00, $p$ > 0.05). En detalle, por cada año adicional, la confianza política disminuye en 0.00 puntos en promedio, controlando por las demás variables. Sin embargo, esta asociación no es estadísticamente significativa, por lo que no es posible afirmar que entre ola y ola exista una disminución en la confianza política de los individuos. 
+
+b) Incorpore una interacción entre el efecto within de la satisfacción con la democracia y el parámetro que captura el efecto del tiempo. Interprete sus resultados (puede ilustrarlos con un gráfico). (7 puntos)
+
+De acuerdo con los resultados del Modelo 6, el efecto de interacción entre la satisfacción con la democracia y el tiempo sobre la confianza política es positivo y estadísticamente significativo ($\beta$ = 0.01, $p$ < 0.05). Esto sugiere que, a medida que aumenta el tiempo, la confianza política aumenta en 0.01 puntos en promedio por cada unidad que aumenta la satisfacción con la democracia en los individuos en el tiempo. 
+
+
+
+En la Figura \@ref(fig:fig5) se ilustra el efecto marginal _within_ de la satisfacción con la democracia sobre la confianza política moderado por el tiempo. A partir de esta figura es posible concluir que el efecto positivo de la satisfacción con la democracia en mayores niveles de confianza política interindividual se acrecienta a medida que aumenta el tiempo. Esto se refleja en que, con la en la Ola 2016 el efecto marginal _within_ de la satisfacción con la democracia es de 0.24, y en la Ola 2022 este es de 0.3. En ese sentido, la velocidad de cambio del efecto de la satisfacción con la democracia aumenta en 0.01 unidades entre olas, siendo una relación estadísticamente significativa (95%) en todo el periodo analizado.
+
+```{r fig5, echo=FALSE, fig.cap='Efecto marginal del efecto within de satisfacción con democracia moderado por el efecto del tiempo', fig.align='center', out.width='80%'}
+
+plot_slopes(m6, 
+            variables = "satisdemo_cgm", 
+            condition = "ola",
+            conf_level = .95,
+            re.form = NA) +
+  geom_hline(yintercept = 0, 
+             color = "red", 
+             linetype = "dashed") +
+  scale_x_continuous(
+    breaks = 1:6, 
+    labels = c(2016, 2017, 2018, 2019, 2021, 2022) #
+  ) +
+  labs(y = "Efecto marginal de satisfacción con democracia (within)",
+       x = "Ola",
+      caption= "Fuente: elaboración propia con datos agrupados de ELSOC 2016-2022 (n = 4.868)",
+       title = NULL)
+
+```
+
+
+
+# Referencias
+
+::: {#refs}
+:::
+
+\pagebreak
+
+# Código de R
+
+```{r ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+
+```
+
+

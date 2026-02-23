@@ -1,0 +1,969 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  12pt,
+  a4paper,
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{setspace}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[left=2.54cm,right=2.54cm,top=2.54cm,bottom=2.54cm]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newlength{\cslentryspacingunit} % times entry-spacing
+\setlength{\cslentryspacingunit}{\parskip}
+\newenvironment{CSLReferences}[2] % #1 hanging-ident, #2 entry spacing
+ {% don't indent paragraphs
+  \setlength{\parindent}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+  \let\oldpar\par
+  \def\par{\hangindent=\cslhangindent\oldpar}
+  \fi
+  % set entry spacing
+  \setlength{\parskip}{#2\cslentryspacingunit}
+ }%
+ {}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{#1\hfill\break}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+\ifLuaTeX
+\usepackage[bidi=basic]{babel}
+\else
+\usepackage[bidi=default]{babel}
+\fi
+\babelprovide[main,import]{english}
+% get rid of language-specific shorthands (see #6817):
+\let\LanguageShortHands\languageshorthands
+\def\languageshorthands#1{}
+\usepackage{titling}
+\pretitle{\begin{center}\LARGE\includegraphics[width=7cm]{../img/logo_isuc.png}\\[\bigskipamount]}
+\posttitle{\end{center}}
+\usepackage{times}
+\usepackage{caption}
+\usepackage{floatrow}
+\usepackage{float}
+\floatsetup[figure]{capposition=top}
+\floatsetup[table]{capposition=top}
+\floatplacement{figure}{H}
+\floatplacement{table}{h}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{fancyhdr}
+\fancyhead{}
+\usepackage{threeparttable}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdflang={en},
+  colorlinks=true,
+  linkcolor={DarkSlateBlue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={DarkSlateBlue},
+  pdfcreator={LaTeX via pandoc}}
+
+\title{\vspace{5cm} Guía N°4}
+\usepackage{etoolbox}
+\makeatletter
+\providecommand{\subtitle}[1]{% add subtitle to \maketitle
+  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+}
+\makeatother
+\subtitle{Análisis de Datos Multinivel - SOL3051}
+\author{~Estudiante \href{mailto:alaffertt@estudiante.uc.cl}{Andreas Laffert}\\
+\hspace*{0.333em}Profesora Camila Ortiz\\
+Ayudante Andrés González\\
+\vspace{8cm}}
+\date{miércoles 04, diciembre 2024}
+
+\begin{document}
+\maketitle
+
+\setstretch{1.15}
+\pagebreak
+
+\hypertarget{enunciado-1}{%
+\section{Enunciado 1}\label{enunciado-1}}
+
+Como primer paso, elimine los casos perdidos de la base de datos. Luego, estime un modelo multinivel sin predictores que le permita descomponer la varianza de la probabilidad de justificar la violencia hacia Carabineros. Calcule la correlación intraclase e interprete sus resultados (4 puntos).
+
+Para la eliminación de los casos perdidos, primero se transforma la base de datos ELSOC 2016-2022 que viene en formato ``wide'' a ``long'' a partir del subfijo de la ola respectiva. Luego, se analiza la distribución de los valores perdidos en cada variable (ver Figura \ref{fig:fig1}). Por último, se aplica un procedimiento listwise (eliminación por filas) de tratamiento de casos perdidos, dejando solo aquellos casos con información completa en todas las varibles.
+
+Implementación en R:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+
+\CommentTok{\# seleccionar {-}{-}{-}{-}}
+
+\NormalTok{db }\OtherTok{\textless{}{-}}\NormalTok{ elsoc }\SpecialCharTok{\%\textgreater{}\%} 
+\NormalTok{  dplyr}\SpecialCharTok{::}\FunctionTok{select}\NormalTok{(}\SpecialCharTok{{-}}\FunctionTok{c}\NormalTok{(version, muestra, comuna\_w01)) }\SpecialCharTok{\%\textgreater{}\%} 
+\NormalTok{  janitor}\SpecialCharTok{::}\FunctionTok{clean\_names}\NormalTok{() }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{as\_tibble}\NormalTok{() }
+ 
+\CommentTok{\# filtrar: no {-}{-}{-}{-}{-} }
+
+\CommentTok{\# recodificar y transformar: luego {-}{-}{-}{-}}
+
+\NormalTok{db\_long }\OtherTok{\textless{}{-}}\NormalTok{ db }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{pivot\_longer}\NormalTok{(}
+    \AttributeTok{cols =} \FunctionTok{matches}\NormalTok{(}\StringTok{"\_w}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{d\{2\}$"}\NormalTok{), }
+    \AttributeTok{names\_to =} \FunctionTok{c}\NormalTok{(}\StringTok{".value"}\NormalTok{, }\StringTok{"wave"}\NormalTok{), }
+    \AttributeTok{names\_pattern =} \StringTok{"(.*)\_w(}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{d\{2\})"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{ola =} \FunctionTok{as.numeric}\NormalTok{(wave)) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{select}\NormalTok{(}\SpecialCharTok{{-}}\NormalTok{wave)}
+
+\CommentTok{\# casos perdidos {-}{-}{-}{-}{-}}
+
+\FunctionTok{prop\_miss}\NormalTok{(db\_long[}\FunctionTok{c}\NormalTok{(}\DecValTok{7}\SpecialCharTok{:}\DecValTok{18}\NormalTok{)])}\SpecialCharTok{*}\DecValTok{100}
+\DocumentationTok{\#\# [1] 3.490329}
+
+\CommentTok{\#miss\_var\_summary(db\_long)}
+
+\NormalTok{g1 }\OtherTok{\textless{}{-}} \FunctionTok{vis\_miss}\NormalTok{(db\_long) }\SpecialCharTok{+} \FunctionTok{theme}\NormalTok{(}\AttributeTok{axis.text.x =} \FunctionTok{element\_text}\NormalTok{(}\AttributeTok{angle=}\DecValTok{80}\NormalTok{))}
+
+\NormalTok{db\_long }\OtherTok{\textless{}{-}} \FunctionTok{na.omit}\NormalTok{(db\_long)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{04-guia_files/figure-latex/fig1-1} 
+
+}
+
+\caption{Proporción de casos perdiso por variable}\label{fig:fig1}
+\end{figure}
+
+Luego de la eliminación de casos perdidos, la muestra final se compone de 4868 observaciones anidadas en 1245 encuestados.
+
+\begin{table}[h!]
+\begin{center}
+\scalebox{1}{
+\begin{threeparttable}
+\begin{tabular}{l c}
+\toprule
+ & Modelo 0 \\
+\midrule
+Intercepto                  & $-2.04^{***}$ \\
+                            & $(0.08)$      \\
+\midrule
+AIC                         & $4266.46$     \\
+BIC                         & $4279.44$     \\
+Log Likelihood              & $-2131.23$    \\
+Num. obs.                   & $4868$        \\
+Num. groups: idencuesta     & $1245$        \\
+Var: idencuesta (Intercept) & $1.83$        \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\scriptsize{\item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. $^{***}p<0.001$; $^{**}p<0.01$; $^{*}p<0.05$. \\ \item Fuente: elaboración propia con datos agrupados de ELSOC 2016-2022 (n = 4.868)}
+\end{tablenotes}
+\end{threeparttable}
+}
+\caption{\label{tab:table1} Modelo multinivel sin predictores para la justificación de violencia hacia Carabineros}
+\label{table:coefficients}
+\end{center}
+\end{table}
+
+En la Tabla \ref{tab:table1} se muestran los resultados del modelo multinivel logístico sin predictores para la justificación de la violencia hacia Carabineros, que descompone la varianza de esta variable a nivel de observaciones/mediciones e individuos. Siguiendo a Hox et al. (\protect\hyperlink{ref-hox_multilevel_2017a}{2017, p. 117}), la correlación intraclase (ICC) para este modelo multinivel logístico es la siguiente:
+
+\[ICC = \frac{\sigma^2_{\mu_0}}{\sigma^2_{\mu_0} + \pi^2/3} = \frac{1.83}{1.83+3.29} = 0.358\]
+
+Los resultados sugieren que la ICC del modelo nulo es de 0.36, lo cual representa la cantidad de varianza de la justificación de la violencia hacia Carabineros que puede atribuirse a la estructura de agrupación en la población, en este caso, individuos. Esto significa que un 36\% de la varianza de la justificación de la violencia contra Carabineros se asocia a diferencias entre individuos, mientras que un 64\% de su varianza corresponde al cambio en el tiempo en los mismos individuos. Con todo, existe una proporción considerable de la variabilidad de la justificación de la violencia hacia Carabineros que se debe a diferencias o caractecterísticas propias de los individuos.
+
+\hypertarget{enunciado-2}{%
+\section{Enunciado 2}\label{enunciado-2}}
+
+Describa los principales patrones de evolución de la Justificación de la violencia hacia Carabineros a nivel individual. Interprete sus resultados (4 puntos)
+
+La Figura \ref{fig:fig2} ilustra las frecuencias anuales en la justificación de la violencia hacia Carabineros entre 2016 y 2022. Cada año representa frecuencias porcentuales de la justificación (o no), y los flujos entre ellos reflejan el cambio de opiniones dentro de los mismos sujetos de un año al siguiente, dado que estamos utilizando de datos de panel. Así, por ejemplo, del 87\% que no justificaba la violencia contra Carabineros en 2018, aproximadamente un 74\% mantuvo la misma respuesta en 2019, mientras que un 13\% cambió su opinión hacia sí justificar la violencia contra Carabineros. En general, la gran mayoría de los encuestados -entre el 70 y el 90\%- no justifica la violencia hacia Carabineros en todo el periodo. A pesar de esta tendencia general, se observan pequeñas variaciones en los años 2019 y 2020-21, en donde aumenta la cantidad de personas que afirman justificar este tipo de violencia para luego retornar a bajos niveles en el 2022. Estos cambios se asocian principalmente al periodo de crisis social y política en el contexto del Estallido Social y la Pandemia por Covid-19 y posterior.
+
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{04-guia_files/figure-latex/fig2-1} 
+
+}
+
+\caption{Cambios en la justificación de violencia hacia Carabineros en el tiempo (2016-2022)}\label{fig:fig2}
+\end{figure}
+
+\hypertarget{enunciado-3}{%
+\section{Enunciado 3}\label{enunciado-3}}
+
+Realice los análisis necesarios para estimar cómo la satisfacción con la democracia influye en la justificación de la violencia hacia la policía. Para ello:
+
+\begin{enumerate}
+\def\labelenumi{\roman{enumi}.}
+\item
+  Estime el efecto within y contextual de la satisfacción con la democracia, controlando por la edad, el sexo, y el nivel educacional (cree una dummy que identifique a quienes tienen Ed. media o más, dejé el resto como referencia), la ideología, valoración de movimientos de izquierda y preferencias autoritarias.
+\item
+  Tomando como base el modelo anterior, estime si el efecto within de la satisfacción con la democracia es moderado por la tendencia ideológica promedio de los individuos.
+\item
+  Tomando como base el modelo estimado en ii), agregue efectos fijos para cada Ola de realización de la encuesta.
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\tightlist
+\item
+  Reporte sus resultados en una tabla (5 ptos)
+\end{enumerate}
+
+\begin{table}[h!]
+\begin{center}
+\scalebox{0.8}{
+\begin{threeparttable}
+\begin{tabular}{l c c c}
+\toprule
+ & Modelo 1 & Modelo 2 & Modelo 3 \\
+\midrule
+Intercepto                                                                                        & $-0.14$       & $0.84^{*}$    & $0.72$        \\
+                                                                                                  & $(0.30)$      & $(0.34)$      & $(0.38)$      \\
+Satisfacción con la democracia (\textit{within})                                                  & $-0.17^{**}$  & $-0.62^{***}$ & $-0.46^{**}$  \\
+                                                                                                  & $(0.06)$      & $(0.14)$      & $(0.15)$      \\
+Satisfacción con la democracia (\textit{contextual})                                              & $-0.13$       & $-0.14$       & $-0.21$       \\
+                                                                                                  & $(0.10)$      & $(0.10)$      & $(0.11)$      \\
+Edad                                                                                              & $-0.03^{***}$ & $-0.03^{***}$ & $-0.03^{***}$ \\
+                                                                                                  & $(0.00)$      & $(0.00)$      & $(0.00)$      \\
+Hombre (Ref.= Mujer)                                                                              & $0.22^{*}$    & $0.24^{*}$    & $0.24$        \\
+                                                                                                  & $(0.11)$      & $(0.11)$      & $(0.12)$      \\
+Educación media completa o más (Ref.= Ed. media incompleta o menos)                               & $-0.46^{***}$ & $-0.52^{***}$ & $-0.50^{***}$ \\
+                                                                                                  & $(0.12)$      & $(0.13)$      & $(0.14)$      \\
+Ideología política (\textit{within})                                                              & $-0.13^{***}$ &               &               \\
+                                                                                                  & $(0.02)$      &               &               \\
+Valoración MS de izquierda (\textit{cgm})                                                         & $0.51^{***}$  & $0.51^{***}$  & $0.19$        \\
+                                                                                                  & $(0.10)$      & $(0.11)$      & $(0.12)$      \\
+Preferencia liderzagos autoritarios (\textit{cgm})                                                & $-0.31^{***}$ & $-0.30^{***}$ & $-0.28^{***}$ \\
+                                                                                                  & $(0.04)$      & $(0.05)$      & $(0.05)$      \\
+Ideología política (\textit{contextual})                                                          &               & $-0.19^{***}$ & $-0.22^{***}$ \\
+                                                                                                  &               & $(0.03)$      & $(0.03)$      \\
+Ola (Ref.= 2016)                                                                                  &               &               &               \\
+                                                                                                  &               &               &               \\
+\quad Satisfacción con la democracia (\textit{within}) x Ideología política (\textit{contextual}) &               & $0.08^{**}$   & $0.06^{*}$    \\
+                                                                                                  &               & $(0.03)$      & $(0.03)$      \\
+\quad 2017                                                                                        &               &               & $-0.11$       \\
+                                                                                                  &               &               & $(0.18)$      \\
+\quad 2018                                                                                        &               &               & $-0.13$       \\
+                                                                                                  &               &               & $(0.17)$      \\
+\quad 2019                                                                                        &               &               & $0.85^{***}$  \\
+                                                                                                  &               &               & $(0.17)$      \\
+\quad 2021                                                                                        &               &               & $1.04^{***}$  \\
+                                                                                                  &               &               & $(0.16)$      \\
+2022                                                                                              &               &               & $-0.34$       \\
+                                                                                                  &               &               & $(0.19)$      \\
+\midrule
+AIC                                                                                               & $4051.08$     & $4031.22$     & $3903.75$     \\
+BIC                                                                                               & $4115.98$     & $4115.60$     & $4020.58$     \\
+Log Likelihood                                                                                    & $-2015.54$    & $-2002.61$    & $-1933.88$    \\
+Num. obs.                                                                                         & $4868$        & $4868$        & $4868$        \\
+Num. groups: idencuesta                                                                           & $1245$        & $1245$        & $1245$        \\
+Var: idencuesta (Intercept)                                                                       & $1.06$        & $1.07$        & $1.43$        \\
+Var: idencuesta satisdemo\_cgm                                                                    & $$            & $0.17$        & $0.20$        \\
+Cov: idencuesta (Intercept) satisdemo\_cgm                                                        & $$            & $0.18$        & $0.23$        \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\scriptsize{\item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. $^{***}p<0.001$; $^{**}p<0.01$; $^{*}p<0.05$. \\ \item Fuente: elaboración propia con datos agrupados de ELSOC 2016-2022 (n = 4.868)}
+\end{tablenotes}
+\end{threeparttable}
+}
+\caption{\label{tab:table2} Modelos multinivel para la justificación de violencia hacia Carabineros}
+\label{table:coefficients}
+\end{center}
+\end{table}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  Interprete el efecto within de la satisfacción con la democracia en el modelo 1(5 ptos)
+\end{enumerate}
+
+En la Tabla \ref{tab:table2} se presentan los resultados de los modelos multinivel estimados para la justificación de la violencia hacia Carabineros. Según el Modelo 1, el efecto \emph{within} de la satisfacción con la democracia es negativo y estadísticamente significativo (\(\beta\) = -0.17, \(p\) \textless{} 0.01). Este efecto, estimado mediante un predictor centrado a la gran media, refleja cómo las variaciones intraindividuales en la satisfacción con la democracia a lo largo del tiempo se asocian con cambios en la justificación de la violencia hacia Carabineros. En detalle, un aumento de una unidad en la satisfacción con la democracia reduce las log-odds de justificar la violencia contra Carabineros en 0.17 unidades, manteniendo constantes las demás variables del modelo. Esta relación es estadísticamente significativa a un 99\% de confianza. Al exponenciar este coeficiente, se obtiene una razón de probabilidad (odds ratio) de \(e^{-0.18} \approx 0.84\), lo que indica que un aumento de una unidad en la satisfacción con la democracia reduce las chanches promedio de justificar la violencia en un 16\%.
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  Interprete el efecto del sexo y la edad en el modelo 2 (6 ptos)
+\end{enumerate}
+
+En el Modelo 2, el efecto del sexo (hombre) sobre la justificación de la violencia hacia Carabineros es positivo pero no estadísticamente significativo (\(\beta\) = 0.20, \(p\) \textgreater{} 0.05). Esto indica que, en promedio, ser hombre aumenta las log-odds de justificar la violencia hacia Carabineros en 0.23 unidades en comparación con las mujeres, manteniendo constantes las demás variables del modelo. Sin embargo, esta relación no es estadísticamente significativa con un 95\% de confianza. Al exponenciar este coeficiente, se obtiene una razón de odds (odds ratio) de \(e^{0.20} \approx 1.22\), lo que significa que, en promedio, las chances de justificar la violencia contra Carabineros aumentan en un 22\% para los hombres en comparación con las mujeres.
+
+Por su parte, el efecto de la edad es negativo y estadísticamente significativo (\(\beta\) = -0.03, \(p\) \textless{} 0.001). Esto implica que, por cada año adicional de edad, las log-odds de justificar la violencia hacia Carabineros disminuyen en 0.03 unidades, manteniendo constantes las demás variables. La razón de odds correspondiente es \(e^{-0.03} \approx 0.97\), lo que sugiere que, por cada año adicional, las chances de justificar la violencia disminuyen en un 3\% en promedio, reflejando una asociación consistente entre mayor edad y menor probabilidad de justificar la violencia hacia Carabineros.
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\setcounter{enumi}{3}
+\tightlist
+\item
+  En base al modelo 2, interprete estadística y sustantivamente el efecto within de la satisfacción por la vida moderado por la ideología. Grafique sus resultados (8 puntos)
+\end{enumerate}
+
+El coeficiente de interacción entre la satisfacción con la democracia y la ideología política es positivo y estadísticamente significativo (\(\beta\) = 0.08, \(p\) \textless{} 0.01), lo que indica que el efecto \emph{within} de la satisfacción con la democracia sobre la justificación de la violencia hacia Carabineros varía dependiendo del nivel promedio de ideología política del individuo \emph{(contextual)}. Específicamente, ceteris paribus, el impacto negativo de las variaciones intraindividuales en la satisfacción con la democracia sobre la justificación de la violencia es menos pronunciado en individuos con ideologías más de derecha. En términos de odds ratio, un aumento de una unidad en la ideología contextual incrementa las odds asociadas a la interacción en aproximadamente un 8\% (\(e^{0.08} \approx 1.08\)).
+
+Sustantivamente, esto sugiere que para aquellos individuos con ideologías más conservadoras o de derecha, la relación entre la satisfacción con la democracia y la justificación de la violencia hacia Carabineros se debilita, lo que implica que los efectos de la satisfacción con la democracia son más moderados o cercanos a cero en comparación con aquellos con ideologías más a la izquierda. Para estos últimos (es decir, cuando el promedio de ideología es cercano a cero), el efecto marginal \emph{within} de la satisfacción con la democracia es negativo y estadísticamente significativo. Esto sugiere que para las personas más de izquierda un incremento en la satisfacción con la democracia interindividual reduce las chances de justificar este tipo de violencia.
+
+\begin{figure}
+
+{\centering \includegraphics[width=0.8\linewidth]{04-guia_files/figure-latex/fig3-1} 
+
+}
+
+\caption{Efecto marginal del efecto within de satisfacción con democracia moderado por el efecto contextual la ideología}\label{fig:fig3}
+\end{figure}
+
+En la Figura \ref{fig:fig3} se visualiza el efecto marginal de la satisfacción con la democracia \emph{within}, moderado por el efecto \emph{contextual} de la ideología política. Los resultados indican que el efecto \emph{within} de la satisfacción con la democracia es negativo y estadísticamente significativo para las personas con ideologías más de izquierda. Sin embargo, a medida que la ideología se orienta más hacia la derecha, el efecto de la satisfacción con la democracia disminuye y se aproxima a cero volviéndose estadísticamente no signiticativo.
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\setcounter{enumi}{4}
+\tightlist
+\item
+  Interprete estadística y sustantivamente los efectos fijos de Ola, estimados en el modelo 3 (6 puntos).
+\end{enumerate}
+
+En el Modelo 3, los efectos fijos asociados a las categorías de Ola (con 2016 como categoría referencia) revelan cambios en la probabilidad de justificar la violencia hacia Carabineros a lo largo del tiempo, controlando por las demás variables. Los resultados indican que, en comparación con 2016:
+
+\begin{itemize}
+\item
+  No se observan diferencias estadísticamente significativas en los coeficientes de las Olas 2017, 2018 y 2022.
+\item
+  Las olas de 2019 (\(\beta\) = 0.92, \(p\) \textless{} 0.001) y 2021 (\(\beta\) = 1.09, \(p\) \textless{} 0.001) presentan aumentos significativos en la probabilidad de justificar la violencia contra Carabineros, con incrementos en las odds de aproximadamente un 151\% y 197\%, respectivamente (\(e^{0.92} \approx 2.51, e^{1.05} \approx 2.97\)). Esto quiere decir que, en promedio, las chances de justificar la violencia contra Carabineros se incrementaron en un 151\% en el 2019 y un 197\% en el 2021.
+\end{itemize}
+
+En términos sustantivos, los resultados de los efectos fijos para las Olas sugieren que hubo variaciones relevantes en la probabilidad de justificar la violencia contra Carabineros en los años 2019 - 2021. Se observa un aumento en la justificación de este tipo de violencia en el 2019 y 2021, muy posiblemente asociado a los cambios en actitudes y evaluaciones de justicia por parte de las personas luego de la crisis social y política con el Estallido Social, en donde hubo manifestaciones violentas y diversos casos de violación de derechos humanos por parte de Carabineros. Luego, el efecto negativo del año 2022 revela que, en comparación al 2016, la probabilidad de justificar este tipo de violencia es mucho menor, lo cual puede relacionarse con el periodo posterior a la crisis social y política, al rol de Carabineros durante la Pandemia por Covid-19 y al aumento de la inseguridad ciudadana.
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\setcounter{enumi}{5}
+\tightlist
+\item
+  Reestime el modelo 1 con predictores sin centrar y agregue efectos aleatorios para la variable satisfacción con la democracia a nivel 1. En base a este modelo, calcule probabilidades predichas de justificar la violencia hacia las policías, en función del grado de satisfacción con la democracia (fije el resto de los predictores en sus medias muestrales, y las variables categóricas en sus modas). Considere los efectos aleatorios en el cálculo. Para ilustrar sus resultados, grafique las probabilidades predichas para los 10 primeros individuos de la base de datos e interprete. (10 puntos)
+\end{enumerate}
+
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{04-guia_files/figure-latex/fig4-1} 
+
+}
+
+\caption{Valores predichos para justificación de la violencia hacia Carabuneros según satisfacción con la democracia}\label{fig:fig4}
+\end{figure}
+
+En la Figura \ref{fig:fig4} se visualizan las probabilidades predichas de la justificación de la violencia contra Carabineros a partir de la satisfacción con la democracia para los primeros diez sujetos de la base de datos de panel. A partir de esta figura se observa que, en general, a mayor satisfacción con la democracia menores tienden a ser las probabilidades de justificar la violencia contra Carabineros, respaldando lo que se mostró en el Modelo 1. A pesar de esta tendencia general, se aprecian algunas variaciones al mirar las pendientes de cada sujeto. Así, el efecto negativo de la satisfacción con la democracia es mucho mayor en algunos sujetos y mucho menor en otros, e inclusive positivo en uno. Estas diferencias entre individuos sugieren que existen otros factores que pueden explicar la justificación de la violencia hacia Carabineros.
+
+\hypertarget{enunciado-4}{%
+\section{Enunciado 4}\label{enunciado-4}}
+
+En los medios de comunicación es habitual escuchar que la confianza política ha tendido a disminuir en los últimos años. Para analizar este tema, genere un índice (promedio) de confianza política a partir de la confianza en el congreso, partidos y gobierno. A continuación modele el índice de confianza política en función de la satisfacción con la democracia (within y contextual), controlando por sexo, edad, educación (media o superior), autoritarismo, ideología y estatus social subjetivo. Agregue un efecto lineal del tiempo. Reporte sus resultados en una tabla.
+
+\begin{table}[H]
+\begin{center}
+\scalebox{0.8}{
+\begin{threeparttable}
+\begin{tabular}{l c c}
+\toprule
+ & Modelo 5 & Modelo 6 \\
+\midrule
+Intercepto                                                          & $1.23^{***}$ & $1.31^{***}$ \\
+                                                                    & $(0.07)$     & $(0.06)$     \\
+Satisfacción con la democracia (\textit{within})                    & $0.26^{***}$ & $0.23^{***}$ \\
+                                                                    & $(0.01)$     & $(0.02)$     \\
+Satisfacción con la democracia (\textit{contextual})                & $0.19^{***}$ & $0.18^{***}$ \\
+                                                                    & $(0.02)$     & $(0.02)$     \\
+Edad                                                                & $0.00^{*}$   & $0.00$       \\
+                                                                    & $(0.00)$     & $(0.00)$     \\
+Hombre (Ref.= Mujer)                                                & $0.05$       & $0.03$       \\
+                                                                    & $(0.02)$     & $(0.02)$     \\
+Educación media completa o más (Ref.= Ed. media incompleta o menos) & $0.06^{*}$   & $0.03$       \\
+                                                                    & $(0.03)$     & $(0.02)$     \\
+Ideología política (\textit{within})                                & $0.01$       & $0.01^{*}$   \\
+                                                                    & $(0.00)$     & $(0.00)$     \\
+Estatus social subjetivo (\textit{cgm})                             & $0.03^{***}$ & $0.02^{***}$ \\
+                                                                    & $(0.01)$     & $(0.01)$     \\
+Preferencia liderzagos autoritarios (\textit{cgm})                  & $0.01$       & $0.01$       \\
+                                                                    & $(0.01)$     & $(0.01)$     \\
+Ola                                                                 & $-0.00$      & $-0.00$      \\
+                                                                    & $(0.00)$     & $(0.00)$     \\
+Satisfacción con la democracia (\textit{within}) x Ola              &              & $0.01^{*}$   \\
+                                                                    &              & $(0.00)$     \\
+\midrule
+AIC                                                                 & $8527.68$    & $8384.86$    \\
+BIC                                                                 & $8605.57$    & $8482.21$    \\
+Log Likelihood                                                      & $-4251.84$   & $-4177.43$   \\
+Num. obs.                                                           & $4868$       & $4868$       \\
+Num. groups: idencuesta                                             & $1245$       & $1245$       \\
+Var: idencuesta (Intercept)                                         & $0.10$       & $0.09$       \\
+Var: Residual                                                       & $0.27$       & $0.26$       \\
+Var: idencuesta satisdemo\_cgm                                      & $$           & $0.02$       \\
+Cov: idencuesta (Intercept) satisdemo\_cgm                          & $$           & $0.04$       \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\scriptsize{\item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. $^{***}p<0.001$; $^{**}p<0.01$; $^{*}p<0.05$. \\ \item Fuente: elaboración propia con datos agrupados de ELSOC 2016-2022 (n = 4.868)}
+\end{tablenotes}
+\end{threeparttable}
+}
+\caption{\label{tab:table3} Modelos multinivel para la confianza política}
+\label{table:coefficients}
+\end{center}
+\end{table}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\tightlist
+\item
+  Interprete el efecto del tiempo (5 puntos)
+\end{enumerate}
+
+En la Tabla \ref{tab:table3} se presentan los resultados de los modelos multinivel para la confianza política. Los resultados sugieren que el tiempo tiene un efecto negativo pero no estadísticamente significativo (\(\beta\) = -0.00, \(p\) \textgreater{} 0.05). En detalle, por cada año adicional, la confianza política disminuye en 0.00 puntos en promedio, controlando por las demás variables. Sin embargo, esta asociación no es estadísticamente significativa, por lo que no es posible afirmar que entre ola y ola exista una disminución en la confianza política de los individuos.
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  Incorpore una interacción entre el efecto within de la satisfacción con la democracia y el parámetro que captura el efecto del tiempo. Interprete sus resultados (puede ilustrarlos con un gráfico). (7 puntos)
+\end{enumerate}
+
+De acuerdo con los resultados del Modelo 6, el efecto de interacción entre la satisfacción con la democracia y el tiempo sobre la confianza política es positivo y estadísticamente significativo (\(\beta\) = 0.01, \(p\) \textless{} 0.05). Esto sugiere que, a medida que aumenta el tiempo, la confianza política aumenta en 0.01 puntos en promedio por cada unidad que aumenta la satisfacción con la democracia en los individuos en el tiempo.
+
+En la Figura \ref{fig:fig5} se ilustra el efecto marginal \emph{within} de la satisfacción con la democracia sobre la confianza política moderado por el tiempo. A partir de esta figura es posible concluir que el efecto positivo de la satisfacción con la democracia en mayores niveles de confianza política interindividual se acrecienta a medida que aumenta el tiempo. Esto se refleja en que, con la en la Ola 2016 el efecto marginal \emph{within} de la satisfacción con la democracia es de 0.24, y en la Ola 2022 este es de 0.3. En ese sentido, la velocidad de cambio del efecto de la satisfacción con la democracia aumenta en 0.01 unidades entre olas, siendo una relación estadísticamente significativa (95\%) en todo el periodo analizado.
+
+\begin{figure}
+
+{\centering \includegraphics[width=0.8\linewidth]{04-guia_files/figure-latex/fig5-1} 
+
+}
+
+\caption{Efecto marginal del efecto within de satisfacción con democracia moderado por el efecto del tiempo}\label{fig:fig5}
+\end{figure}
+
+\hypertarget{referencias}{%
+\section{Referencias}\label{referencias}}
+
+\hypertarget{refs}{}
+\begin{CSLReferences}{1}{0}
+\leavevmode\vadjust pre{\hypertarget{ref-hox_multilevel_2017a}{}}%
+Hox, J., Moerbeek, M., \& Schoot, R. van de. (2017). \emph{Multilevel {Analysis}: {Techniques} and {Applications}, {Third Edition}} (3rd ed.). New York: Routledge. \url{https://doi.org/10.4324/9781315650982}
+
+\end{CSLReferences}
+
+\pagebreak
+
+\hypertarget{cuxf3digo-de-r}{%
+\section{Código de R}\label{cuxf3digo-de-r}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{knitr}\SpecialCharTok{::}\NormalTok{opts\_chunk}\SpecialCharTok{$}\FunctionTok{set}\NormalTok{(}\AttributeTok{echo =}\NormalTok{ F,}
+                      \AttributeTok{warning =}\NormalTok{ F,}
+                      \AttributeTok{error =}\NormalTok{ F, }
+                      \AttributeTok{message =}\NormalTok{ F) }
+\ControlFlowTok{if}\NormalTok{ (}\SpecialCharTok{!} \FunctionTok{require}\NormalTok{(}\StringTok{"pacman"}\NormalTok{)) }\FunctionTok{install.packages}\NormalTok{(}\StringTok{"pacman"}\NormalTok{)}
+
+\NormalTok{pacman}\SpecialCharTok{::}\FunctionTok{p\_load}\NormalTok{(tidyverse, }
+\NormalTok{               magrittr,}
+\NormalTok{               sjmisc, }
+\NormalTok{               sjPlot, }
+\NormalTok{               lme4, }
+\NormalTok{               easystats, }
+\NormalTok{               influence.ME, }
+\NormalTok{               broom.mixed, }
+\NormalTok{               here,}
+\NormalTok{               marginaleffects,}
+\NormalTok{               ggeffects,}
+\NormalTok{               texreg, }
+\NormalTok{               ggdist,}
+\NormalTok{               misty,}
+\NormalTok{               kableExtra,}
+\NormalTok{               naniar,}
+\NormalTok{               ggalluvial, }
+\NormalTok{               shadowtext,}
+\NormalTok{               MetBrewer)}
+
+\FunctionTok{options}\NormalTok{(}\AttributeTok{scipen=}\DecValTok{999}\NormalTok{)}
+\FunctionTok{rm}\NormalTok{(}\AttributeTok{list =} \FunctionTok{ls}\NormalTok{())}
+
+\NormalTok{miles }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(x) \{}
+  \FunctionTok{format}\NormalTok{(}\FunctionTok{round}\NormalTok{(}\FunctionTok{as.numeric}\NormalTok{(x),}\DecValTok{0}\NormalTok{), }\AttributeTok{big.mark =} \StringTok{"."}\NormalTok{)}
+\NormalTok{\}}
+
+\NormalTok{decimales }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(x) \{}
+  \FunctionTok{format}\NormalTok{(}\FunctionTok{round}\NormalTok{(}\FunctionTok{as.numeric}\NormalTok{(x), }\DecValTok{2}\NormalTok{), }\AttributeTok{decimal.mark =} \StringTok{","}\NormalTok{)}
+\NormalTok{\}}
+
+\CommentTok{\# set theme}
+
+\FunctionTok{theme\_set}\NormalTok{(}\FunctionTok{theme\_ggdist}\NormalTok{())}
+
+\FunctionTok{options}\NormalTok{(}\AttributeTok{knitr.kable.NA =} \StringTok{""}\NormalTok{)}
+\FunctionTok{options}\NormalTok{(}\AttributeTok{knitr.table.format=}\StringTok{"latex"}\NormalTok{)}
+
+\FunctionTok{load}\NormalTok{(}\AttributeTok{file =} \FunctionTok{here}\NormalTok{(}\StringTok{"input/data/Elsoc\_2016\_2022.RData"}\NormalTok{)) }\SpecialCharTok{\%\textgreater{}\%} 
+\NormalTok{  sjlabelled}\SpecialCharTok{::}\FunctionTok{remove\_all\_labels}\NormalTok{()}
+
+\NormalTok{elsoc }\OtherTok{\textless{}{-}}\NormalTok{ elw}
+\FunctionTok{rm}\NormalTok{(elw)}
+\FunctionTok{names}\NormalTok{(elsoc)}
+\FunctionTok{glimpse}\NormalTok{(elsoc)}
+
+\CommentTok{\# seleccionar {-}{-}{-}{-}}
+
+\NormalTok{db }\OtherTok{\textless{}{-}}\NormalTok{ elsoc }\SpecialCharTok{\%\textgreater{}\%} 
+\NormalTok{  dplyr}\SpecialCharTok{::}\FunctionTok{select}\NormalTok{(}\SpecialCharTok{{-}}\FunctionTok{c}\NormalTok{(version, muestra, comuna\_w01)) }\SpecialCharTok{\%\textgreater{}\%} 
+\NormalTok{  janitor}\SpecialCharTok{::}\FunctionTok{clean\_names}\NormalTok{() }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{as\_tibble}\NormalTok{() }
+ 
+\CommentTok{\# filtrar: no {-}{-}{-}{-}{-} }
+
+\CommentTok{\# recodificar y transformar: luego {-}{-}{-}{-}}
+
+\NormalTok{db\_long }\OtherTok{\textless{}{-}}\NormalTok{ db }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{pivot\_longer}\NormalTok{(}
+    \AttributeTok{cols =} \FunctionTok{matches}\NormalTok{(}\StringTok{"\_w}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{d\{2\}$"}\NormalTok{), }
+    \AttributeTok{names\_to =} \FunctionTok{c}\NormalTok{(}\StringTok{".value"}\NormalTok{, }\StringTok{"wave"}\NormalTok{), }
+    \AttributeTok{names\_pattern =} \StringTok{"(.*)\_w(}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{d\{2\})"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{ola =} \FunctionTok{as.numeric}\NormalTok{(wave)) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{select}\NormalTok{(}\SpecialCharTok{{-}}\NormalTok{wave)}
+
+\CommentTok{\# casos perdidos {-}{-}{-}{-}{-}}
+
+\FunctionTok{prop\_miss}\NormalTok{(db\_long[}\FunctionTok{c}\NormalTok{(}\DecValTok{7}\SpecialCharTok{:}\DecValTok{18}\NormalTok{)])}\SpecialCharTok{*}\DecValTok{100}
+
+\CommentTok{\#miss\_var\_summary(db\_long)}
+
+\NormalTok{g1 }\OtherTok{\textless{}{-}} \FunctionTok{vis\_miss}\NormalTok{(db\_long) }\SpecialCharTok{+} \FunctionTok{theme}\NormalTok{(}\AttributeTok{axis.text.x =} \FunctionTok{element\_text}\NormalTok{(}\AttributeTok{angle=}\DecValTok{80}\NormalTok{))}
+
+\NormalTok{db\_long }\OtherTok{\textless{}{-}} \FunctionTok{na.omit}\NormalTok{(db\_long)}
+
+\NormalTok{g1}
+\NormalTok{m0 }\OtherTok{\textless{}{-}} \FunctionTok{glmer}\NormalTok{(piedras\_carab\_f }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ idencuesta), }
+                \AttributeTok{data =}\NormalTok{ db\_long, }\AttributeTok{family =} \FunctionTok{binomial}\NormalTok{(}\AttributeTok{link =} \StringTok{"logit"}\NormalTok{),}
+            \AttributeTok{nAGQ =} \DecValTok{5}\NormalTok{)}
+
+\NormalTok{performance}\SpecialCharTok{::}\FunctionTok{icc}\NormalTok{(m0, }\AttributeTok{by\_group =}\NormalTok{ T)}
+\NormalTok{vars0 }\OtherTok{\textless{}{-}} \FunctionTok{as.data.frame}\NormalTok{(}\FunctionTok{VarCorr}\NormalTok{(m0))}
+\NormalTok{vars0}
+\NormalTok{var\_between }\OtherTok{\textless{}{-}}\NormalTok{ vars0}\SpecialCharTok{$}\NormalTok{vcov[}\DecValTok{1}\NormalTok{]}
+
+\NormalTok{ICC }\OtherTok{\textless{}{-}}\NormalTok{ var\_between }\SpecialCharTok{/}\NormalTok{ (var\_between }\SpecialCharTok{+}\NormalTok{ ((pi}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{)}\SpecialCharTok{/}\DecValTok{3}\NormalTok{))}
+\NormalTok{ICC}
+
+\NormalTok{ccoef }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{(}
+  \StringTok{"(Intercept)"} \OtherTok{=} \StringTok{"Intercepto"}\NormalTok{)}
+
+\NormalTok{texreg}\SpecialCharTok{::}\FunctionTok{texreg}\NormalTok{(}\FunctionTok{list}\NormalTok{(m0),}
+               \AttributeTok{custom.model.names =} \FunctionTok{c}\NormalTok{(}\StringTok{"Modelo 0"}\NormalTok{),}
+               \AttributeTok{caption =} \FunctionTok{paste}\NormalTok{(}\StringTok{"(}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{\#tab:table1)"}\NormalTok{,}\StringTok{"Modelo multinivel sin predictores para la justificación de violencia hacia Carabineros"}\NormalTok{),}
+               \AttributeTok{stars =} \FunctionTok{c}\NormalTok{(}\FloatTok{0.05}\NormalTok{, }\FloatTok{0.01}\NormalTok{, }\FloatTok{0.001}\NormalTok{),}
+               \AttributeTok{custom.coef.map =}\NormalTok{ ccoef,}
+               \AttributeTok{custom.note =} \StringTok{"}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. \%stars. }\SpecialCharTok{\textbackslash{}\textbackslash{}\textbackslash{}\textbackslash{}}\StringTok{ }\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{item Fuente: elaboración propia con datos agrupados de ELSOC 2016{-}2022 (n = 4.868)"}\NormalTok{,}
+               \AttributeTok{threeparttable =}\NormalTok{ T,}
+               \AttributeTok{leading.zero =}\NormalTok{ T,}
+               \AttributeTok{float.pos =} \StringTok{"h!"}\NormalTok{,}
+               \AttributeTok{use.packages =}\NormalTok{ F,}
+               \AttributeTok{booktabs =}\NormalTok{ T,}
+               \AttributeTok{scalebox =} \DecValTok{1}\NormalTok{)}
+
+
+\NormalTok{datos.viocab }\OtherTok{\textless{}{-}}\NormalTok{ db\_long }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{group\_by}\NormalTok{(idencuesta, ola) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{count}\NormalTok{(piedras\_carab\_f) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{group\_by}\NormalTok{(ola) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{porcentaje=}\NormalTok{n}\SpecialCharTok{/}\FunctionTok{sum}\NormalTok{(n)) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{ungroup}\NormalTok{() }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{na.omit}\NormalTok{() }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{piedras\_carab\_f =} \FunctionTok{if\_else}\NormalTok{(piedras\_carab\_f }\SpecialCharTok{==} \DecValTok{0}\NormalTok{, }\StringTok{"No justifica"}\NormalTok{, }\StringTok{"Justifica"}\NormalTok{),}
+         \AttributeTok{piedras\_carab\_f =} \FunctionTok{factor}\NormalTok{(piedras\_carab\_f, }\AttributeTok{levels =} \FunctionTok{c}\NormalTok{(}\StringTok{"No justifica"}\NormalTok{, }\StringTok{"Justifica"}\NormalTok{)),}
+         \AttributeTok{ola =} \FunctionTok{case\_when}\NormalTok{(ola }\SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\textasciitilde{}} \StringTok{"2016"}\NormalTok{,}
+\NormalTok{                         ola }\SpecialCharTok{==} \DecValTok{2} \SpecialCharTok{\textasciitilde{}} \StringTok{"2017"}\NormalTok{,}
+\NormalTok{                         ola }\SpecialCharTok{==} \DecValTok{3} \SpecialCharTok{\textasciitilde{}} \StringTok{"2018"}\NormalTok{,}
+\NormalTok{                         ola }\SpecialCharTok{==} \DecValTok{4} \SpecialCharTok{\textasciitilde{}} \StringTok{"2019"}\NormalTok{,}
+\NormalTok{                         ola }\SpecialCharTok{==} \DecValTok{5} \SpecialCharTok{\textasciitilde{}} \StringTok{"2021"}\NormalTok{,}
+\NormalTok{                         ola }\SpecialCharTok{==} \DecValTok{6} \SpecialCharTok{\textasciitilde{}} \StringTok{"2022"}\NormalTok{),}
+         \AttributeTok{ola =} \FunctionTok{factor}\NormalTok{(ola, }\AttributeTok{levels =} \FunctionTok{c}\NormalTok{(}\StringTok{"2016"}\NormalTok{,}
+                                      \StringTok{"2017"}\NormalTok{,}
+                                      \StringTok{"2018"}\NormalTok{,}
+                                      \StringTok{"2019"}\NormalTok{,}
+                                      \StringTok{"2021"}\NormalTok{,}
+                                      \StringTok{"2022"}\NormalTok{)))}
+\NormalTok{etiquetas.viocab }\OtherTok{\textless{}{-}}\NormalTok{ db\_long }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{group\_by}\NormalTok{(ola, piedras\_carab\_f) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{summarise}\NormalTok{(}\AttributeTok{count =} \FunctionTok{n}\NormalTok{(), }\AttributeTok{.groups =} \StringTok{"drop"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{group\_by}\NormalTok{(ola) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{porcentaje =}\NormalTok{ count }\SpecialCharTok{/} \FunctionTok{sum}\NormalTok{(count)) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{na.omit}\NormalTok{() }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{idencuesta =} \DecValTok{1}\NormalTok{,}
+         \AttributeTok{piedras\_carab\_f =} \FunctionTok{if\_else}\NormalTok{(piedras\_carab\_f }\SpecialCharTok{==} \DecValTok{0}\NormalTok{, }\StringTok{"No justifica"}\NormalTok{, }\StringTok{"Justifica"}\NormalTok{),}
+         \AttributeTok{piedras\_carab\_f =} \FunctionTok{factor}\NormalTok{(piedras\_carab\_f, }\AttributeTok{levels =} \FunctionTok{c}\NormalTok{(}\StringTok{"No justifica"}\NormalTok{, }\StringTok{"Justifica"}\NormalTok{)),}
+         \AttributeTok{ola =} \FunctionTok{case\_when}\NormalTok{(ola }\SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\textasciitilde{}} \StringTok{"2016"}\NormalTok{,}
+\NormalTok{                         ola }\SpecialCharTok{==} \DecValTok{2} \SpecialCharTok{\textasciitilde{}} \StringTok{"2017"}\NormalTok{,}
+\NormalTok{                         ola }\SpecialCharTok{==} \DecValTok{3} \SpecialCharTok{\textasciitilde{}} \StringTok{"2018"}\NormalTok{,}
+\NormalTok{                         ola }\SpecialCharTok{==} \DecValTok{4} \SpecialCharTok{\textasciitilde{}} \StringTok{"2019"}\NormalTok{,}
+\NormalTok{                         ola }\SpecialCharTok{==} \DecValTok{5} \SpecialCharTok{\textasciitilde{}} \StringTok{"2021"}\NormalTok{,}
+\NormalTok{                         ola }\SpecialCharTok{==} \DecValTok{6} \SpecialCharTok{\textasciitilde{}} \StringTok{"2022"}\NormalTok{),}
+         \AttributeTok{ola =} \FunctionTok{factor}\NormalTok{(ola, }\AttributeTok{levels =} \FunctionTok{c}\NormalTok{(}\StringTok{"2016"}\NormalTok{,}
+                                      \StringTok{"2017"}\NormalTok{,}
+                                      \StringTok{"2018"}\NormalTok{,}
+                                      \StringTok{"2019"}\NormalTok{,}
+                                      \StringTok{"2021"}\NormalTok{,}
+                                      \StringTok{"2022"}\NormalTok{)))}
+
+
+
+\NormalTok{datos.viocab }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ ola, }\AttributeTok{fill =}\NormalTok{ piedras\_carab\_f, }\AttributeTok{stratum =}\NormalTok{ piedras\_carab\_f,}
+             \AttributeTok{alluvium =}\NormalTok{ idencuesta, }\AttributeTok{y =}\NormalTok{ porcentaje)) }\SpecialCharTok{+}
+\NormalTok{  ggalluvial}\SpecialCharTok{::}\FunctionTok{geom\_flow}\NormalTok{(}\AttributeTok{alpha =}\NormalTok{ .}\DecValTok{4}\NormalTok{) }\SpecialCharTok{+} 
+\NormalTok{  ggalluvial}\SpecialCharTok{::}\FunctionTok{geom\_stratum}\NormalTok{(}\AttributeTok{linetype =} \DecValTok{0}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{scale\_y\_continuous}\NormalTok{(}\AttributeTok{labels =}\NormalTok{ scales}\SpecialCharTok{::}\NormalTok{percent) }\SpecialCharTok{+} 
+  \FunctionTok{scale\_fill\_manual}\NormalTok{(}\AttributeTok{values =} \FunctionTok{c}\NormalTok{(}\StringTok{"\#aba8fa"}\NormalTok{, }\StringTok{"\#c71558"}\NormalTok{)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_shadowtext}\NormalTok{(}\AttributeTok{data =}\NormalTok{ etiquetas.viocab, }
+                  \FunctionTok{aes}\NormalTok{(}\AttributeTok{label =} \FunctionTok{ifelse}\NormalTok{(porcentaje }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{ , scales}\SpecialCharTok{::}\FunctionTok{percent}\NormalTok{(porcentaje, }\AttributeTok{accuracy =}\NormalTok{ .}\DecValTok{1}\NormalTok{),}\StringTok{""}\NormalTok{)),}
+                  \AttributeTok{position =} \FunctionTok{position\_stack}\NormalTok{(}\AttributeTok{vjust =}\NormalTok{ .}\DecValTok{5}\NormalTok{),}
+                  \AttributeTok{show.legend =} \ConstantTok{FALSE}\NormalTok{,}
+                  \AttributeTok{size =} \DecValTok{4}\NormalTok{,}
+                  \AttributeTok{color =} \FunctionTok{rep}\NormalTok{(}\StringTok{\textquotesingle{}white\textquotesingle{}}\NormalTok{),}
+                  \AttributeTok{bg.colour=}\StringTok{\textquotesingle{}grey30\textquotesingle{}}\NormalTok{)}\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{y =} \StringTok{"Porcentaje"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Ola"}\NormalTok{,}
+       \AttributeTok{fill =} \StringTok{"Justificación violencia hacia Carabineros"}\NormalTok{,}
+    \AttributeTok{caption =} \StringTok{"Fuente: elaboración propia con datos agrupados de ELSOC 2016{-}2022 (n = 4.868)"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"bottom"}\NormalTok{)}
+
+\NormalTok{db\_long }\SpecialCharTok{\%\textless{}\textgreater{}\%} 
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{educ\_f =} \FunctionTok{if\_else}\NormalTok{(educ\_f }\SpecialCharTok{\%in\%} \FunctionTok{c}\NormalTok{(}\StringTok{"Ed. Basica o menos"}\NormalTok{, }\StringTok{"Ed. Media Inc"}\NormalTok{), }\DecValTok{0}\NormalTok{, }\DecValTok{1}\NormalTok{)) }
+
+\CommentTok{\#Gran media}
+\NormalTok{db\_long}\SpecialCharTok{$}\NormalTok{gm\_satisdemo }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(db\_long}\SpecialCharTok{$}\NormalTok{satisdemo, }\AttributeTok{use=}\StringTok{"complete.obs"}\NormalTok{)}
+\NormalTok{db\_long}\SpecialCharTok{$}\NormalTok{gm\_izqder }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(db\_long}\SpecialCharTok{$}\NormalTok{izqder, }\AttributeTok{use=}\StringTok{"complete.obs"}\NormalTok{)}
+\NormalTok{db\_long}\SpecialCharTok{$}\NormalTok{gm\_mov\_izq }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(db\_long}\SpecialCharTok{$}\NormalTok{mov\_izq, }\AttributeTok{use=}\StringTok{"complete.obs"}\NormalTok{)}
+\NormalTok{db\_long}\SpecialCharTok{$}\NormalTok{gm\_mandfuerte }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(db\_long}\SpecialCharTok{$}\NormalTok{mandfuerte, }\AttributeTok{use=}\StringTok{"complete.obs"}\NormalTok{)}
+
+\CommentTok{\#Centrado en la gran media}
+\NormalTok{db\_long}\SpecialCharTok{$}\NormalTok{satisdemo\_cgm }\OtherTok{\textless{}{-}}\NormalTok{ db\_long}\SpecialCharTok{$}\NormalTok{satisdemo }\SpecialCharTok{{-}}\NormalTok{ db\_long}\SpecialCharTok{$}\NormalTok{gm\_satisdemo}
+\NormalTok{db\_long}\SpecialCharTok{$}\NormalTok{izqder\_cgm }\OtherTok{\textless{}{-}}\NormalTok{ db\_long}\SpecialCharTok{$}\NormalTok{izqder }\SpecialCharTok{{-}}\NormalTok{ db\_long}\SpecialCharTok{$}\NormalTok{gm\_izqder }
+\NormalTok{db\_long}\SpecialCharTok{$}\NormalTok{mov\_izq\_cgm }\OtherTok{\textless{}{-}}\NormalTok{ db\_long}\SpecialCharTok{$}\NormalTok{mov\_izq }\SpecialCharTok{{-}}\NormalTok{ db\_long}\SpecialCharTok{$}\NormalTok{gm\_mov\_izq }
+\NormalTok{db\_long}\SpecialCharTok{$}\NormalTok{mandfuerte\_cgm }\OtherTok{\textless{}{-}}\NormalTok{ db\_long}\SpecialCharTok{$}\NormalTok{mandfuerte }\SpecialCharTok{{-}}\NormalTok{ db\_long}\SpecialCharTok{$}\NormalTok{gm\_mandfuerte }
+
+\CommentTok{\# Contextual }
+\NormalTok{db\_long }\SpecialCharTok{\%\textless{}\textgreater{}\%} 
+  \FunctionTok{group\_by}\NormalTok{(idencuesta) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{cm\_satisdemo =} \FunctionTok{mean}\NormalTok{(satisdemo, }\AttributeTok{use=}\StringTok{"complete.obs"}\NormalTok{)) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{ungroup}\NormalTok{()}
+
+\NormalTok{db\_long }\SpecialCharTok{\%\textless{}\textgreater{}\%} 
+  \FunctionTok{group\_by}\NormalTok{(idencuesta) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{cm\_izqder =} \FunctionTok{mean}\NormalTok{(izqder, }\AttributeTok{use=}\StringTok{"complete.obs"}\NormalTok{)) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{ungroup}\NormalTok{()}
+
+\NormalTok{db\_long }\SpecialCharTok{\%\textless{}\textgreater{}\%} 
+  \FunctionTok{mutate}\NormalTok{(}
+    \AttributeTok{ola\_f =} \FunctionTok{case\_when}\NormalTok{(ola }\SpecialCharTok{==} \DecValTok{1} \SpecialCharTok{\textasciitilde{}} \StringTok{"2016"}\NormalTok{,}
+\NormalTok{                      ola }\SpecialCharTok{==} \DecValTok{2} \SpecialCharTok{\textasciitilde{}} \StringTok{"2017"}\NormalTok{,}
+\NormalTok{                      ola }\SpecialCharTok{==} \DecValTok{3} \SpecialCharTok{\textasciitilde{}} \StringTok{"2018"}\NormalTok{,}
+\NormalTok{                      ola }\SpecialCharTok{==} \DecValTok{4} \SpecialCharTok{\textasciitilde{}} \StringTok{"2019"}\NormalTok{,}
+\NormalTok{                      ola }\SpecialCharTok{==} \DecValTok{5} \SpecialCharTok{\textasciitilde{}} \StringTok{"2021"}\NormalTok{,}
+\NormalTok{                      ola }\SpecialCharTok{==} \DecValTok{6} \SpecialCharTok{\textasciitilde{}} \StringTok{"2022"}\NormalTok{),}
+    \AttributeTok{ola\_f =} \FunctionTok{factor}\NormalTok{(ola\_f, }\AttributeTok{levels =} \FunctionTok{c}\NormalTok{(}\StringTok{"2016"}\NormalTok{,}
+                                     \StringTok{"2017"}\NormalTok{,}
+                                     \StringTok{"2018"}\NormalTok{,}
+                                     \StringTok{"2019"}\NormalTok{,}
+                                     \StringTok{"2021"}\NormalTok{,}
+                                     \StringTok{"2022"}\NormalTok{)))}
+
+
+\NormalTok{m1 }\OtherTok{\textless{}{-}} \FunctionTok{glmer}\NormalTok{(piedras\_carab\_f }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ satisdemo\_cgm }\SpecialCharTok{+}\NormalTok{ cm\_satisdemo }\SpecialCharTok{+}
+\NormalTok{            edad }\SpecialCharTok{+}\NormalTok{ hombre }\SpecialCharTok{+}\NormalTok{ educ\_f }\SpecialCharTok{+}\NormalTok{ izqder\_cgm }\SpecialCharTok{+} 
+\NormalTok{            mov\_izq\_cgm }\SpecialCharTok{+}\NormalTok{ mandfuerte\_cgm }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ idencuesta), }
+            \AttributeTok{data =}\NormalTok{ db\_long, }\AttributeTok{family =} \FunctionTok{binomial}\NormalTok{(}\AttributeTok{link =} \StringTok{"logit"}\NormalTok{))}
+
+\NormalTok{m2 }\OtherTok{\textless{}{-}} \FunctionTok{glmer}\NormalTok{(piedras\_carab\_f }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ satisdemo\_cgm }\SpecialCharTok{+}\NormalTok{ cm\_satisdemo }\SpecialCharTok{+}
+\NormalTok{            edad }\SpecialCharTok{+}\NormalTok{ hombre }\SpecialCharTok{+}\NormalTok{ educ\_f }\SpecialCharTok{+}\NormalTok{ cm\_izqder }\SpecialCharTok{+} 
+\NormalTok{            mov\_izq\_cgm }\SpecialCharTok{+}\NormalTok{ mandfuerte\_cgm }\SpecialCharTok{+}\NormalTok{ satisdemo\_cgm}\SpecialCharTok{*}\NormalTok{cm\_izqder }\SpecialCharTok{+}
+\NormalTok{            (}\DecValTok{1} \SpecialCharTok{+}\NormalTok{ satisdemo\_cgm}\SpecialCharTok{|}\NormalTok{ idencuesta), }
+            \AttributeTok{data =}\NormalTok{ db\_long, }\AttributeTok{family =} \FunctionTok{binomial}\NormalTok{(}\AttributeTok{link =} \StringTok{"logit"}\NormalTok{))}
+
+\NormalTok{m3 }\OtherTok{\textless{}{-}} \FunctionTok{glmer}\NormalTok{(piedras\_carab\_f }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ satisdemo\_cgm }\SpecialCharTok{+}\NormalTok{ cm\_satisdemo }\SpecialCharTok{+}
+\NormalTok{            edad }\SpecialCharTok{+}\NormalTok{ hombre }\SpecialCharTok{+}\NormalTok{ educ\_f }\SpecialCharTok{+}\NormalTok{ cm\_izqder }\SpecialCharTok{+} 
+\NormalTok{            mov\_izq\_cgm }\SpecialCharTok{+}\NormalTok{ mandfuerte\_cgm }\SpecialCharTok{+}\NormalTok{ satisdemo\_cgm}\SpecialCharTok{*}\NormalTok{cm\_izqder }\SpecialCharTok{+}\NormalTok{ ola\_f }\SpecialCharTok{+}
+\NormalTok{            (}\DecValTok{1} \SpecialCharTok{+}\NormalTok{ satisdemo\_cgm }\SpecialCharTok{|}\NormalTok{ idencuesta), }
+            \AttributeTok{data =}\NormalTok{ db\_long, }\AttributeTok{family =} \FunctionTok{binomial}\NormalTok{(}\AttributeTok{link =} \StringTok{"logit"}\NormalTok{))}
+
+
+
+
+\NormalTok{ccoef }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{(}
+  \StringTok{"(Intercept)"} \OtherTok{=} \StringTok{"Intercepto"}\NormalTok{,}
+  \AttributeTok{satisdemo\_cgm =} \StringTok{"Satisfacción con la democracia (}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{textit\{within\})"}\NormalTok{,}
+  \AttributeTok{cm\_satisdemo =} \StringTok{"Satisfacción con la democracia (}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{textit\{contextual\})"}\NormalTok{,}
+  \AttributeTok{edad =} \StringTok{"Edad"}\NormalTok{,}
+  \AttributeTok{hombre =} \StringTok{"Hombre (Ref.= Mujer)"}\NormalTok{,}
+  \AttributeTok{educ\_f =} \StringTok{"Educación media completa o más (Ref.= Ed. media incompleta o menos)"}\NormalTok{,}
+  \AttributeTok{izqder\_cgm =} \StringTok{"Ideología política (}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{textit\{within\})"}\NormalTok{,}
+  \AttributeTok{mov\_izq\_cgm =} \StringTok{"Valoración MS de izquierda (}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{textit\{cgm\})"}\NormalTok{,}
+  \AttributeTok{mandfuerte\_cgm =} \StringTok{"Preferencia liderzagos autoritarios (}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{textit\{cgm\})"}\NormalTok{,}
+  \AttributeTok{cm\_izqder =} \StringTok{"Ideología política (}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{textit\{contextual\})"}\NormalTok{,}
+  \StringTok{"satisdemo\_cgm:cm\_izqder"} \OtherTok{=} \StringTok{"Satisfacción con la democracia (}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{textit\{within\}) x Ideología política (}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{textit\{contextual\})"}\NormalTok{,}
+  \AttributeTok{ola\_f2017 =} \StringTok{"2017"}\NormalTok{,}
+  \AttributeTok{ola\_f2018 =} \StringTok{"2018"}\NormalTok{,}
+  \AttributeTok{ola\_f2019 =} \StringTok{"2019"}\NormalTok{,}
+  \AttributeTok{ola\_f2021 =} \StringTok{"2021"}\NormalTok{,}
+  \AttributeTok{ola\_f2022 =} \StringTok{"2022"}
+\NormalTok{  )}
+
+\NormalTok{texreg}\SpecialCharTok{::}\FunctionTok{texreg}\NormalTok{(}\FunctionTok{list}\NormalTok{(m1, m2, m3),}
+               \AttributeTok{custom.model.names =} \FunctionTok{c}\NormalTok{(}\StringTok{"Modelo 1"}\NormalTok{, }\StringTok{"Modelo 2"}\NormalTok{, }\StringTok{"Modelo 3"}\NormalTok{),}
+               \AttributeTok{caption =} \FunctionTok{paste}\NormalTok{(}\StringTok{"(}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{\#tab:table2)"}\NormalTok{,}\StringTok{"Modelos multinivel para la justificación de violencia hacia Carabineros"}\NormalTok{),}
+               \AttributeTok{stars =} \FunctionTok{c}\NormalTok{(}\FloatTok{0.05}\NormalTok{, }\FloatTok{0.01}\NormalTok{, }\FloatTok{0.001}\NormalTok{),}
+               \AttributeTok{custom.coef.map =}\NormalTok{ ccoef,}
+               \AttributeTok{groups =} \FunctionTok{list}\NormalTok{(}\StringTok{"Ola (Ref.= 2016)"} \OtherTok{=} \DecValTok{11}\SpecialCharTok{:}\DecValTok{15}\NormalTok{),}
+               \AttributeTok{custom.note =} \StringTok{"}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. \%stars. }\SpecialCharTok{\textbackslash{}\textbackslash{}\textbackslash{}\textbackslash{}}\StringTok{ }\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{item Fuente: elaboración propia con datos agrupados de ELSOC 2016{-}2022 (n = 4.868)"}\NormalTok{,}
+               \AttributeTok{threeparttable =}\NormalTok{ T,}
+               \AttributeTok{leading.zero =}\NormalTok{ T,}
+               \AttributeTok{float.pos =} \StringTok{"h!"}\NormalTok{,}
+               \AttributeTok{use.packages =}\NormalTok{ F,}
+               \AttributeTok{booktabs =}\NormalTok{ T,}
+               \AttributeTok{scalebox =} \FloatTok{0.8}\NormalTok{)}
+
+
+\FunctionTok{plot\_slopes}\NormalTok{(m2, }
+            \AttributeTok{variables =} \StringTok{"satisdemo\_cgm"}\NormalTok{, }
+            \AttributeTok{condition =} \StringTok{"cm\_izqder"}\NormalTok{,}
+            \AttributeTok{conf\_level =}\NormalTok{ .}\DecValTok{95}\NormalTok{,}
+            \AttributeTok{re.form =} \ConstantTok{NA}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{geom\_hline}\NormalTok{(}\AttributeTok{yintercept =} \DecValTok{0}\NormalTok{, }
+             \AttributeTok{color =} \StringTok{"red"}\NormalTok{, }
+             \AttributeTok{linetype =} \StringTok{"dashed"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{y =} \StringTok{"Efecto marginal de satisfacción con democracia (within)"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Promedio de ideología individual"}\NormalTok{,}
+      \AttributeTok{caption=} \StringTok{"Fuente: elaboración propia con datos agrupados de ELSOC 2016{-}2022 (n = 4.868)"}\NormalTok{,}
+       \AttributeTok{title =} \ConstantTok{NULL}\NormalTok{)}
+
+
+\NormalTok{m4 }\OtherTok{\textless{}{-}} \FunctionTok{glmer}\NormalTok{(piedras\_carab\_f }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ satisdemo }\SpecialCharTok{+}
+\NormalTok{            edad }\SpecialCharTok{+}\NormalTok{ hombre }\SpecialCharTok{+}\NormalTok{ educ\_f }\SpecialCharTok{+}\NormalTok{ izqder }\SpecialCharTok{+} 
+\NormalTok{            mov\_izq }\SpecialCharTok{+}\NormalTok{ mandfuerte }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{+}\NormalTok{ satisdemo }\SpecialCharTok{|}\NormalTok{ idencuesta), }
+            \AttributeTok{data =}\NormalTok{ db\_long, }\AttributeTok{family =} \FunctionTok{binomial}\NormalTok{(}\AttributeTok{link =} \StringTok{"logit"}\NormalTok{))}
+
+\NormalTok{moda\_hombre }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(}\FunctionTok{names}\NormalTok{(}\FunctionTok{sort}\NormalTok{(}\FunctionTok{table}\NormalTok{(db\_long}\SpecialCharTok{$}\NormalTok{hombre), }\AttributeTok{decreasing =} \ConstantTok{TRUE}\NormalTok{))[}\DecValTok{1}\NormalTok{])}
+\NormalTok{moda\_educ\_f }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(}\FunctionTok{names}\NormalTok{(}\FunctionTok{sort}\NormalTok{(}\FunctionTok{table}\NormalTok{(db\_long}\SpecialCharTok{$}\NormalTok{educ\_f), }\AttributeTok{decreasing =} \ConstantTok{TRUE}\NormalTok{))[}\DecValTok{1}\NormalTok{])}
+\NormalTok{moda\_mov\_izq }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(}\FunctionTok{names}\NormalTok{(}\FunctionTok{sort}\NormalTok{(}\FunctionTok{table}\NormalTok{(db\_long}\SpecialCharTok{$}\NormalTok{mov\_izq), }\AttributeTok{decreasing =} \ConstantTok{TRUE}\NormalTok{))[}\DecValTok{1}\NormalTok{])}
+
+\NormalTok{new\_data }\OtherTok{\textless{}{-}} \FunctionTok{expand.grid}\NormalTok{(}
+  \AttributeTok{satisdemo =} \FunctionTok{unique}\NormalTok{(db\_long}\SpecialCharTok{$}\NormalTok{satisdemo), }\CommentTok{\# Variar satisdemo}
+  \AttributeTok{edad =} \FunctionTok{mean}\NormalTok{(db\_long}\SpecialCharTok{$}\NormalTok{edad, }\AttributeTok{na.rm =}\NormalTok{ T), }\CommentTok{\# Media de edad}
+  \AttributeTok{hombre =}\NormalTok{ moda\_hombre, }\CommentTok{\# Moda de hombre}
+  \AttributeTok{educ\_f =}\NormalTok{ moda\_educ\_f, }\CommentTok{\# Moda de educ\_f}
+  \AttributeTok{izqder =} \FunctionTok{mean}\NormalTok{(db\_long}\SpecialCharTok{$}\NormalTok{izqder, }\AttributeTok{na.rm =}\NormalTok{ T), }\CommentTok{\# Media de izqder}
+  \AttributeTok{mov\_izq =}\NormalTok{ moda\_mov\_izq, }\CommentTok{\# Moda de mov\_izq}
+  \AttributeTok{mandfuerte =} \FunctionTok{mean}\NormalTok{(db\_long}\SpecialCharTok{$}\NormalTok{mandfuerte, }\AttributeTok{na.rm =}\NormalTok{ T), }\CommentTok{\# Media de mandfuerte}
+  \AttributeTok{idencuesta =} \FunctionTok{unique}\NormalTok{(db\_long}\SpecialCharTok{$}\NormalTok{idencuesta)}
+\NormalTok{)}
+
+\NormalTok{new\_data}\SpecialCharTok{$}\NormalTok{prob }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(m4, }
+        \AttributeTok{newdata =}\NormalTok{ new\_data,}
+        \AttributeTok{re.form =} \ConstantTok{NULL}\NormalTok{,}
+        \AttributeTok{type =} \StringTok{"response"}\NormalTok{)}
+
+\NormalTok{new\_data }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{filter}\NormalTok{(idencuesta }\SpecialCharTok{\%in\%} \FunctionTok{unique}\NormalTok{(idencuesta)[}\DecValTok{1}\SpecialCharTok{:}\DecValTok{10}\NormalTok{]) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{idencuesta =} \FunctionTok{as.factor}\NormalTok{(idencuesta)) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ satisdemo, }\AttributeTok{y =}\NormalTok{ prob, }\AttributeTok{group =}\NormalTok{ idencuesta, }\AttributeTok{color =}\NormalTok{ idencuesta)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{(}\AttributeTok{linewidth =} \FloatTok{0.7}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{geom\_point}\NormalTok{(}\AttributeTok{size =} \DecValTok{2}\NormalTok{) }\SpecialCharTok{+}
+\NormalTok{  MetBrewer}\SpecialCharTok{::}\FunctionTok{scale\_color\_met\_d}\NormalTok{(}\AttributeTok{name =} \StringTok{"Redon"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{y =} \StringTok{"Probabilidades predichas"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Satisfacción con la democracia"}\NormalTok{,}
+       \AttributeTok{color =} \StringTok{"ID Sujeto"}\NormalTok{,}
+       \AttributeTok{caption =} \StringTok{"Fuente: elaboración propia con datos agrupados de ELSOC 2016{-}2022 (n = 4.868)"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"bottom"}\NormalTok{)}
+
+
+
+\NormalTok{db\_long }\SpecialCharTok{\%\textless{}\textgreater{}\%} 
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{ind\_conf =} \FunctionTok{rowMeans}\NormalTok{(}\FunctionTok{cbind}\NormalTok{(conf\_congr, conf\_gob, conf\_part), }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{))}
+
+\NormalTok{db\_long}\SpecialCharTok{$}\NormalTok{gm\_ess }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(db\_long}\SpecialCharTok{$}\NormalTok{ess, }\AttributeTok{use =} \StringTok{"complete.obs"}\NormalTok{)}
+\NormalTok{db\_long}\SpecialCharTok{$}\NormalTok{ess\_cgm }\OtherTok{\textless{}{-}}\NormalTok{ db\_long}\SpecialCharTok{$}\NormalTok{ess }\SpecialCharTok{{-}}\NormalTok{ db\_long}\SpecialCharTok{$}\NormalTok{gm\_ess}
+
+\NormalTok{m5 }\OtherTok{\textless{}{-}} \FunctionTok{lmer}\NormalTok{(ind\_conf }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ satisdemo\_cgm }\SpecialCharTok{+}\NormalTok{ cm\_satisdemo }\SpecialCharTok{+}
+\NormalTok{            edad }\SpecialCharTok{+}\NormalTok{ hombre }\SpecialCharTok{+}\NormalTok{ educ\_f }\SpecialCharTok{+}\NormalTok{ izqder\_cgm }\SpecialCharTok{+} 
+\NormalTok{            ess\_cgm }\SpecialCharTok{+}\NormalTok{ mandfuerte\_cgm }\SpecialCharTok{+}\NormalTok{ ola }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|}\NormalTok{ idencuesta), }
+            \AttributeTok{data =}\NormalTok{ db\_long)}
+
+\NormalTok{m6 }\OtherTok{\textless{}{-}} \FunctionTok{lmer}\NormalTok{(ind\_conf }\SpecialCharTok{\textasciitilde{}} \DecValTok{1} \SpecialCharTok{+}\NormalTok{ satisdemo\_cgm }\SpecialCharTok{+}\NormalTok{ cm\_satisdemo }\SpecialCharTok{+}
+\NormalTok{            edad }\SpecialCharTok{+}\NormalTok{ hombre }\SpecialCharTok{+}\NormalTok{ educ\_f }\SpecialCharTok{+}\NormalTok{ izqder\_cgm }\SpecialCharTok{+} 
+\NormalTok{            ess\_cgm }\SpecialCharTok{+}\NormalTok{ mandfuerte\_cgm }\SpecialCharTok{+}\NormalTok{ ola }\SpecialCharTok{+} 
+\NormalTok{             satisdemo\_cgm}\SpecialCharTok{*}\NormalTok{ola }\SpecialCharTok{+} 
+\NormalTok{             (}\DecValTok{1} \SpecialCharTok{+}\NormalTok{ satisdemo\_cgm}\SpecialCharTok{|}\NormalTok{ idencuesta), }
+            \AttributeTok{data =}\NormalTok{ db\_long)}
+
+\NormalTok{ccoef }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{(}
+  \StringTok{"(Intercept)"} \OtherTok{=} \StringTok{"Intercepto"}\NormalTok{,}
+  \AttributeTok{satisdemo\_cgm =} \StringTok{"Satisfacción con la democracia (}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{textit\{within\})"}\NormalTok{,}
+  \AttributeTok{cm\_satisdemo =} \StringTok{"Satisfacción con la democracia (}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{textit\{contextual\})"}\NormalTok{,}
+  \AttributeTok{edad =} \StringTok{"Edad"}\NormalTok{,}
+  \AttributeTok{hombre =} \StringTok{"Hombre (Ref.= Mujer)"}\NormalTok{,}
+  \AttributeTok{educ\_f =} \StringTok{"Educación media completa o más (Ref.= Ed. media incompleta o menos)"}\NormalTok{,}
+  \AttributeTok{izqder\_cgm =} \StringTok{"Ideología política (}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{textit\{within\})"}\NormalTok{,}
+  \AttributeTok{ess\_cgm =} \StringTok{"Estatus social subjetivo (}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{textit\{cgm\})"}\NormalTok{,}
+  \AttributeTok{mandfuerte\_cgm =} \StringTok{"Preferencia liderzagos autoritarios (}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{textit\{cgm\})"}\NormalTok{,}
+  \AttributeTok{ola =} \StringTok{"Ola"}\NormalTok{,}
+  \StringTok{"satisdemo\_cgm:ola"} \OtherTok{=} \StringTok{"Satisfacción con la democracia (}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{textit\{within\}) x Ola"}
+\NormalTok{  )}
+
+\NormalTok{texreg}\SpecialCharTok{::}\FunctionTok{texreg}\NormalTok{(}\FunctionTok{list}\NormalTok{(m5, m6),}
+               \AttributeTok{custom.model.names =} \FunctionTok{c}\NormalTok{(}\StringTok{"Modelo 5"}\NormalTok{, }\StringTok{"Modelo 6"}\NormalTok{),}
+               \AttributeTok{caption =} \FunctionTok{paste}\NormalTok{(}\StringTok{"(}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{\#tab:table3)"}\NormalTok{,}\StringTok{"Modelos multinivel para la confianza política"}\NormalTok{),}
+               \AttributeTok{stars =} \FunctionTok{c}\NormalTok{(}\FloatTok{0.05}\NormalTok{, }\FloatTok{0.01}\NormalTok{, }\FloatTok{0.001}\NormalTok{),}
+               \AttributeTok{custom.coef.map =}\NormalTok{ ccoef,}
+               \AttributeTok{custom.note =} \StringTok{"}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{item Nota: Celdas contienen coeficientes de regresión con errores estándares entre paréntesis. \%stars. }\SpecialCharTok{\textbackslash{}\textbackslash{}\textbackslash{}\textbackslash{}}\StringTok{ }\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{item Fuente: elaboración propia con datos agrupados de ELSOC 2016{-}2022 (n = 4.868)"}\NormalTok{,}
+               \AttributeTok{threeparttable =}\NormalTok{ T,}
+               \AttributeTok{leading.zero =}\NormalTok{ T,}
+               \AttributeTok{float.pos =} \StringTok{"H"}\NormalTok{,}
+               \AttributeTok{use.packages =}\NormalTok{ F,}
+               \AttributeTok{booktabs =}\NormalTok{ T,}
+               \AttributeTok{scalebox =} \FloatTok{0.8}\NormalTok{)}
+
+
+\FunctionTok{plot\_slopes}\NormalTok{(m6, }
+            \AttributeTok{variables =} \StringTok{"satisdemo\_cgm"}\NormalTok{, }
+            \AttributeTok{condition =} \StringTok{"ola"}\NormalTok{,}
+            \AttributeTok{conf\_level =}\NormalTok{ .}\DecValTok{95}\NormalTok{,}
+            \AttributeTok{re.form =} \ConstantTok{NA}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{geom\_hline}\NormalTok{(}\AttributeTok{yintercept =} \DecValTok{0}\NormalTok{, }
+             \AttributeTok{color =} \StringTok{"red"}\NormalTok{, }
+             \AttributeTok{linetype =} \StringTok{"dashed"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{scale\_x\_continuous}\NormalTok{(}
+    \AttributeTok{breaks =} \DecValTok{1}\SpecialCharTok{:}\DecValTok{6}\NormalTok{, }
+    \AttributeTok{labels =} \FunctionTok{c}\NormalTok{(}\DecValTok{2016}\NormalTok{, }\DecValTok{2017}\NormalTok{, }\DecValTok{2018}\NormalTok{, }\DecValTok{2019}\NormalTok{, }\DecValTok{2021}\NormalTok{, }\DecValTok{2022}\NormalTok{) }\CommentTok{\#}
+\NormalTok{  ) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{y =} \StringTok{"Efecto marginal de satisfacción con democracia (within)"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Ola"}\NormalTok{,}
+      \AttributeTok{caption=} \StringTok{"Fuente: elaboración propia con datos agrupados de ELSOC 2016{-}2022 (n = 4.868)"}\NormalTok{,}
+       \AttributeTok{title =} \ConstantTok{NULL}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+
+\end{document}
